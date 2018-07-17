@@ -1,8 +1,6 @@
 # Passwordstate
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/passwordstate`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+A ruby gem for communicating with a Password state instance
 
 ## Installation
 
@@ -22,17 +20,20 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+require 'passwordstate'
 
-## Development
+client = Passwordstate::Client.new 'https://passwordstate'
+client.auth_data = { username: 'user', password: 'password' }
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+folders = Passwordstate::Resources::Folder.all(client)
+=> [#<Passwordstate::Resources::Folder:0x000055ed493636e8 @folder_name="Example", @folder_id=2, @tree_path="\\Example">, #<Passwordstate::Resources::Folder:0x000055ed49361fa0 @folder_name="Folder", @folder_id=3, @tree_path="\\Example\\Folder">]
+```
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/passwordstate.
+Bug reports and pull requests are welcome on GitHub at https://github.com/ananace/ruby-passwordstate
+The project lives at https://gitlab.liu.se/ITI/ruby-passwordstate
 
 ## License
 
