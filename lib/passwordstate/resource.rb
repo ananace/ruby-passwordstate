@@ -1,6 +1,8 @@
 module Passwordstate
   # A simple resource DSL
   class Resource
+    attr_reader :client
+
     def get(client)
       set! self.class.get(client, send(self.class.index_field))
     end
@@ -19,6 +21,7 @@ module Passwordstate
     end
 
     def initialize(data)
+      @client = data.delete :_client
       set! data, false
       old
     end
@@ -27,7 +30,7 @@ module Passwordstate
       query = Hash[query.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
 
       [client.request(:get, api_path, query: query)].flatten.map do |object|
-        new object
+        new object.merge(_client: client)
       end
     end
 

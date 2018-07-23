@@ -37,6 +37,13 @@ module Passwordstate
                   :total_passwords,
                   :generator_name,
                   :policy_name
+
+      def passwords(options = {})
+        options[:QueryAll] = nil
+        [client.request(:get, "passwords/#{password_list_id}", query: options)].flatten.map do |object|
+          Passwordstate::Resources::Password.new object.merge(_client: client)
+        end
+      end
     end
   end
 end

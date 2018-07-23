@@ -10,6 +10,10 @@ module Passwordstate
                   :tree_path,
                   :site_id, { name: 'SiteID' },
                   :site_location
+
+      def password_lists(options = {})
+        Passwordstate::Resources::PasswordList.search(client, options.merge(tree_path: tree_path))
+      end
     end
   end
 end
