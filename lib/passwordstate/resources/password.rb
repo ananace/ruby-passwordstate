@@ -24,7 +24,7 @@ module Passwordstate
                       :account_type,
                       :notes,
                       :url,
-                      :password,
+                      :password, { redact: true },
                       :expiry_date, { is: Time },
                       :allow_export,
                       :web_user_id, { name: 'WebUser_ID' },
