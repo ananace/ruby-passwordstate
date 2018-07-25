@@ -13,10 +13,11 @@ module Passwordstate
 
     attr_accessor :server_url, :auth_data, :headers, :validate_certificate
 
-    def initialize(url)
+    def initialize(url, options = {})
       @server_url = URI(url)
       @validate_certificate = true
       @headers = DEFAULT_HEADERS
+      @auth_data = options.select { |k, _v| %i[username password].include? k }
     end
 
     def logger
