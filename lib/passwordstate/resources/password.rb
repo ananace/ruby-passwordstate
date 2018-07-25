@@ -33,7 +33,9 @@ module Passwordstate
       read_fields :password_id, { name: 'PasswordID' } # rubocop:disable Style/BracesAroundHashParameters
 
       def self.generate(client, options = {})
-        client.request(:get, 'generatepassword/', query: options).first['Password']
+        results = client.request(:get, 'generatepassword', query: options).map { |r| r['Password'] }
+        return results.first if results.count == 1
+        results
       end
     end
   end
