@@ -34,8 +34,7 @@ module Passwordstate
     def version
       @version ||= begin
         html = request(:get, '', allow_html: true)
-        version = nil
-        html.each_line { |line| if line.include? '<span>V</span>' then version = line; break end }
+        version = html.find_line { |line| line.include? '<span>V</span>' }
         version = />(\d\.\d) \(Build (.+)\)</.match(version)
         "#{version[1]}.#{version[2]}"
       end

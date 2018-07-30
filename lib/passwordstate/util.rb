@@ -28,6 +28,13 @@ class String
       .tr('-', '_')
       .downcase
   end
+
+  def find_line(&_block)
+    raise ArgumentError, 'No block given' unless block_given?
+    each_line do |line|
+      return line if yield line
+    end
+  end
 end
 
 module Passwordstate
