@@ -9,11 +9,11 @@ module Passwordstate
 
     def put(client, query = {})
       to_send = modified.merge(self.class.index_field => send(self.class.index_field))
-      set! self.class.put(client, to_send, query)
+      set! self.class.put(client, to_send, query).first
     end
 
     def post(client, query = {})
-      set! self.class.post(client, attributes, query)
+      set! self.class.post(client, attributes, query).first
     end
 
     def delete(client)
@@ -38,7 +38,7 @@ module Passwordstate
       query = Hash[query.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
 
       object = object.send(object.class.send(index_field)) if object.is_a? Resource
-      client.request :get, "#{api_path}/#{object}", query: query
+      new client.request(:get, "#{api_path}/#{object}", query: query).first
     end
 
     def self.post(client, data, query = {})
@@ -95,6 +95,7 @@ module Passwordstate
 
     def set!(data, store_old = true)
       @old = attributes.dup if store_old
+      data = data.attributes if data.is_a? Passwordstate::Resource
       data.each do |key, value|
         field = self.class.passwordstate_to_ruby_field(key)
         opts = self.class.send(:field_options)[field]
