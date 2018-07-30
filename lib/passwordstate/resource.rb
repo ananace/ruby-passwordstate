@@ -3,21 +3,21 @@ module Passwordstate
   class Resource
     attr_reader :client
 
-    def get(client)
-      set! self.class.get(client, send(self.class.index_field))
+    def get(client, query = {})
+      set! self.class.get(client, send(self.class.index_field), query)
     end
 
-    def put(client, query = {})
+    def put(client, query = {}, body = {})
       to_send = modified.merge(self.class.index_field => send(self.class.index_field))
-      set! self.class.put(client, to_send, query).first
+      set! self.class.put(client, to_send.merge(body), query).first
     end
 
-    def post(client, query = {})
-      set! self.class.post(client, attributes, query).first
+    def post(client, query = {}, body = {})
+      set! self.class.post(client, attributes.merge(body), query).first
     end
 
-    def delete(client)
-      self.class.delete(client, send(self.class.index_field))
+    def delete(client, query = {})
+      self.class.delete(client, send(self.class.index_field), query)
     end
 
     def initialize(data)
