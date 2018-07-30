@@ -28,7 +28,8 @@ module Passwordstate
                       :expiry_date, { is: Time },
                       :allow_export,
                       :web_user_id, { name: 'WebUser_ID' },
-                      :web_password_id, { name: 'WebPassword_ID' } # rubocop:disable Style/BracesAroundHashParameters
+                      :web_password_id, { name: 'WebPassword_ID' },
+                      :password_list_id, { name: 'PasswordListID' } # rubocop:disable Style/BracesAroundHashParameters
 
       read_fields :password_id, { name: 'PasswordID' } # rubocop:disable Style/BracesAroundHashParameters
 
