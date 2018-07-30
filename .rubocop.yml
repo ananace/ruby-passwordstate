@@ -16,6 +16,9 @@ Style/FrozenStringLiteralComment:
 Style/MultilineBlockChain:
   Enabled: false
 
+Layout/ClosingHeredocIndentation:
+  Enabled: false
+
 Layout/IndentHeredoc:
   Enabled: false
 
