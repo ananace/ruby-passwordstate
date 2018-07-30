@@ -21,7 +21,24 @@ module Passwordstate
     end
 
     def logger
-      @logger ||= Logging.logger['Passwordstate::Client']
+      @logger ||= Logging.logger[self]
+    end
+
+    def valid?
+      version
+      true
+    rescue StandardError
+      false
+    end
+
+    def version
+      @version ||= begin
+        html = request(:get, '', allow_html: true)
+        version = nil
+        html.each_line { |line| if line.include? '<span>V</span>' then version = line; break end }
+        version = />(\d\.\d) \(Build (.+)\)</.match(version)
+        "#{version[1]}.#{version[2]}"
+      end
     end
 
     def request(method, api_path, options = {})
@@ -45,10 +62,14 @@ module Passwordstate
       return true if res_obj.is_a? Net::HTTPNoContent
 
       data = JSON.parse(res_obj.body) rescue nil
-
-      return data if res_obj.is_a? Net::HTTPSuccess
-      data = data&.first
-      raise Passwordstate::HTTPError.new(res_obj.code, data&.fetch('errors', []) || [])
+      if data
+        return data if res_obj.is_a? Net::HTTPSuccess
+        data = data&.first
+        raise Passwordstate::HTTPError.new(res_obj.code, data&.fetch('errors', []) || [])
+      else
+        return res_obj.body if options.fetch(:allow_html, false)
+        raise Passwordstate::PasswordstateError, 'Response was not parseable as JSON'
+      end
     end
 
     private
