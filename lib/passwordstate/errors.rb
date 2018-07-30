@@ -9,9 +9,9 @@ module Passwordstate
       @errors = errors
 
       super <<-ERRMSG
-      Passwordstate responded with an error to the request;
-      #{errors.map { |err| err['message'] || err['phrase'] }.join(', ')}
-      ERRMSG
+Passwordstate responded with an error to the request;
+#{errors.map { |err| err['message'] || err['phrase'] }.join(', ')}
+ERRMSG
     end
   end
 end

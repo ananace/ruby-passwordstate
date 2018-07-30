@@ -2,8 +2,6 @@ require 'json'
 
 module Passwordstate
   class Client
-    BASE_API = '/winapi/'.freeze
-
     USER_AGENT = "RubyPasswordstate/#{Passwordstate::VERSION}".freeze
     DEFAULT_HEADERS = {
       'content-type' => 'application/json',
@@ -12,16 +10,22 @@ module Passwordstate
     }.freeze
 
     attr_accessor :server_url, :auth_data, :headers, :validate_certificate
+    attr_writer :api_type
 
     def initialize(url, options = {})
       @server_url = URI(url)
       @validate_certificate = true
       @headers = DEFAULT_HEADERS
-      @auth_data = options.select { |k, _v| %i[username password].include? k }
+      @auth_data = options.select { |k, _v| %i[apikey username password].include? k }
+      @api_type = options.fetch(:api_type) if options.key? :api_type
     end
 
     def logger
       @logger ||= Logging.logger[self]
+    end
+
+    def api_type
+      @api_type || (auth_data.key?(:apikey) ? :api : :winapi)
     end
 
     def valid?
@@ -41,7 +45,7 @@ module Passwordstate
     end
 
     def request(method, api_path, options = {})
-      uri = URI(server_url + BASE_API + api_path)
+      uri = URI(server_url + "/#{api_type}/" + api_path)
       uri.query = URI.encode_www_form(options.fetch(:query)) if options.key? :query
       uri.query = nil if uri.query&.empty?
 
@@ -51,8 +55,9 @@ module Passwordstate
         req_obj.body = req_obj.body.to_json unless req_obj.body.is_a?(String)
       end
 
-      req_obj.ntlm_auth(auth_data[:username], auth_data[:password])
+      req_obj.ntlm_auth(auth_data[:username], auth_data[:password]) if api_type == :winapi
       headers.each { |h, v| req_obj[h] = v }
+      req_obj['APIKey'] = auth_data[:apikey] if api_type == :api
 
       print_http req_obj
       res_obj = http.request req_obj
@@ -69,6 +74,10 @@ module Passwordstate
         return res_obj.body if options.fetch(:allow_html, false)
         raise Passwordstate::PasswordstateError, 'Response was not parseable as JSON'
       end
+    end
+
+    def inspect
+      "#{to_s[0..-2]} #{instance_variables.reject { |k| %i[@auth_data @http @logger].include? k }.map { |k| "#{k}=#{instance_variable_get(k).inspect}" }.join ', '}>"
     end
 
     private
@@ -92,7 +101,7 @@ module Passwordstate
         dir = '<'
         logger.debug "#{dir} Received a #{http.code} #{http.message} response:"
       end
-      http.to_hash.map { |k, v| "#{k}: #{k == 'authorization' ? '[redacted]' : v.join(', ')}" }.each do |h|
+      http.to_hash.map { |k, v| "#{k}: #{%w[authorization apikey].include?(k.downcase) ? '[redacted]' : v.join(', ')}" }.each do |h|
         logger.debug "#{dir} #{h}"
       end
       logger.debug dir
