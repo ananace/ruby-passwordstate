@@ -71,7 +71,7 @@ module Passwordstate
         value = instance_variable_get("@#{field}".to_sym) unless redact
         value = '[ REDACTED ]' if redact
         [field, value]
-      end]
+      end].reject { |_k, v| v.nil? }
     end
 
     def inspect
