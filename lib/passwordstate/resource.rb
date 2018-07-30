@@ -49,6 +49,7 @@ module Passwordstate
     end
 
     def self.put(client, data, query = {})
+      data = Hash[data.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
       query = Hash[query.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
 
       client.request :put, api_path, body: data, query: query
