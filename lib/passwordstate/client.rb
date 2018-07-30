@@ -109,7 +109,7 @@ module Passwordstate
       return if http.body.nil?
       clean_body = JSON.parse(http.body) rescue nil
       if clean_body
-        clean_body = clean_body.each { |k, v| v.replace('[redacted]') if %w[password access_token].include? k }.to_json if http.body
+        clean_body = clean_body.each { |k, v| v.replace('[ REDACTED ]') if k.is_a?(String) && %w[password apikey].include?(k.downcase) }.to_json if http.body
       else
         clean_body = http.body
       end
