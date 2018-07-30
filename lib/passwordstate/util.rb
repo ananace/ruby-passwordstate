@@ -62,8 +62,8 @@ module Passwordstate
         type3 = type2.response(req.ntlm_auth_information, req.ntlm_auth_options)
 
         req['authorization'] = 'NTLM ' + type3.encode64
-        req.body_stream&.rewind
-        req.body = @last_body
+        req.body_stream.rewind if req.body_stream
+        req.body = @last_body if @last_body
 
         super(req, body, &block)
       else
