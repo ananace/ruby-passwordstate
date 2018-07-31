@@ -63,6 +63,10 @@ module Passwordstate
         client.post :post, 'dependencies', body: data.merge(password_id: password_id)
       end
 
+      def self.all(client, query = {})
+        super client, { query_all: true }.merge(query)
+      end
+
       def self.search(client, query = {})
         client.request(:get, 'searchpasswords', query: query).map do |entry|
           new entry.merge(_client: client)
