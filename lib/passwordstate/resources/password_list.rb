@@ -38,12 +38,6 @@ module Passwordstate
                   :generator_name,
                   :policy_name
 
-      def search_passwords(query = {})
-        client.request(:get, "searchpasswords/#{password_list_id}", query: query).map do |entry|
-          Passwordstate::Resources::Password.new entry.merge(_client: client)
-        end
-      end
-
       def passwords
         Passwordstate::ResourceList.new client, Passwordstate::Resources::Password,
                                         all_path: "passwords/#{password_list_id}",
