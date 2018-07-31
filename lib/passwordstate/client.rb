@@ -27,6 +27,22 @@ module Passwordstate
       @api_type || (auth_data.key?(:apikey) ? :api : :winapi)
     end
 
+    def folders
+      ResourceList.new self, Passwordstate::Resources::Folder
+    end
+
+    def hosts
+      ResourceList.new self, Passwordstate::Resources::Folder
+    end
+
+    def passwords
+      ResourceList.new self, Passwordstate::Resources::Password
+    end
+
+    def password_lists
+      ResourceList.new self, Passwordstate::Resources::PasswordList
+    end
+
     def valid?
       version
       true

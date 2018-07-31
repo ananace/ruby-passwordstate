@@ -2,6 +2,7 @@ require 'logging'
 require 'passwordstate/client'
 require 'passwordstate/errors'
 require 'passwordstate/resource'
+require 'passwordstate/resource_list'
 require 'passwordstate/util'
 require 'passwordstate/version'
 

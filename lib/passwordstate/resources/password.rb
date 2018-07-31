@@ -68,9 +68,7 @@ module Passwordstate
       end
 
       def self.search(client, query = {})
-        client.request(:get, 'searchpasswords', query: query).map do |entry|
-          new entry.merge(_client: client)
-        end
+        super client, query.merge(_api_path: 'searchpassword')
       end
 
       def self.generate(client, options = {})

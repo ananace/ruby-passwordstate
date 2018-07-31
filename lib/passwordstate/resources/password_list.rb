@@ -44,11 +44,16 @@ module Passwordstate
         end
       end
 
-      def passwords(query = {})
-        query[:QueryAll] = nil
-        [client.request(:get, "passwords/#{password_list_id}", query: query)].flatten.map do |object|
-          Passwordstate::Resources::Password.new object.merge(_client: client)
-        end
+      def passwords
+        Passwordstate::ResourceList.new client, Passwordstate::Resources::Password,
+                                        all_path: "passwords/#{password_list_id}",
+                                        all_query: { query_all: nil },
+                                        search_path: "searchpasswords/#{password_list_id}",
+                                        object_data: { password_list_id: password_list_id }
+      end
+
+      def self.search(client, query = {})
+        super client, query.merge(_api_path: 'searchpasswordlists')
       end
     end
   end
