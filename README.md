@@ -22,11 +22,8 @@ Or install it yourself as:
 
 ```irb
 irb(main):001:0> require 'passwordstate'
-
 irb(main):002:0> client = Passwordstate::Client.new 'https://passwordstate', username: 'user', password: 'password'
-
 irb(main):003:0> #        Passwordstate::Client.new 'https://passwordstate', apikey: 'key'
-
 irb(main):004:0> client.folders
 => [#<Passwordstate::Resources::Folder:0x000055ed493636e8 @folder_name="Example", @folder_id=2, @tree_path="\\Example">, #<Passwordstate::Resources::Folder:0x000055ed49361fa0 @folder_name="Folder", @folder_id=3, @tree_path="\\Example\\Folder">]
 irb(main):005:0> client.password_lists.get(7).passwords
