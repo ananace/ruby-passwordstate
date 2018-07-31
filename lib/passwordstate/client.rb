@@ -28,11 +28,13 @@ module Passwordstate
     end
 
     def folders
-      ResourceList.new self, Passwordstate::Resources::Folder
+      ResourceList.new self, Passwordstate::Resources::Folder,
+                       only: %i[all search post]
     end
 
     def hosts
-      ResourceList.new self, Passwordstate::Resources::Folder
+      ResourceList.new self, Passwordstate::Resources::Host,
+                       only: %i[search post delete]
     end
 
     def passwords
@@ -40,7 +42,8 @@ module Passwordstate
     end
 
     def password_lists
-      ResourceList.new self, Passwordstate::Resources::PasswordList
+      ResourceList.new self, Passwordstate::Resources::PasswordList,
+                       except: %i[put delete]
     end
 
     def valid?

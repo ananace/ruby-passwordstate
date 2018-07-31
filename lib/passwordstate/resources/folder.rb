@@ -3,6 +3,8 @@ module Passwordstate
     class Folder < Passwordstate::Resource
       api_path 'folders'
 
+      index_field :folder_id
+
       accessor_fields :folder_name,
                       :description
 
