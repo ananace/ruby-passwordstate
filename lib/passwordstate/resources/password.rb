@@ -33,6 +33,7 @@ module Passwordstate
       read_fields :password_id, { name: 'PasswordID' } # rubocop:disable Style/BracesAroundHashParameters
 
       # Things that can be set in a POST/PUT request
+      # TODO: Do this properly
       write_fields :generate_password,
                    :generate_gen_field_password,
                    :password_reset_enabled,
@@ -49,9 +50,15 @@ module Passwordstate
                    :ad_domain_netbios, { name: 'ADDomainNetBIOS' },
                    :validate_with_priv_account
 
+      def check_in
+        client.request :get, "passwords/#{password_id}", query: passwordstatify_hash(check_in: nil)
+      end
+
       def history
         raise 'Password history only available on stored passwords' unless stored?
-        PasswordHistory.get(client, password_id)
+        Passwordstate::ResourceList.new client, PasswordHistory,
+                                        all_path: "passwordhistory/#{password_id}",
+                                        only: :all
       end
 
       def delete(recycle = false, query = {})
@@ -60,7 +67,7 @@ module Passwordstate
 
       def add_dependency(data = {})
         raise 'Password dependency creation only available for stored passwords' unless stored?
-        client.post :post, 'dependencies', body: data.merge(password_id: password_id)
+        client.request :post, 'dependencies', body: self.class.passwordstatify_hash(data.merge(password_id: password_id))
       end
 
       def self.all(client, query = {})
