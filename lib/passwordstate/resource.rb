@@ -31,18 +31,18 @@ module Passwordstate
     end
 
     def self.all(client, query = {})
-      query = Hash[query.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
+      query = passwordstateify_hash query
 
-      [client.request(:get, api_path, query: query)].flatten.map do |object|
+      [client.request(:get, query.fetch(:_api_path, api_path), query: query)].flatten.map do |object|
         new object.merge(_client: client)
       end
     end
 
     def self.get(client, object, query = {})
-      query = Hash[query.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
+      query = passwordstateify_hash query
 
       object = object.send(object.class.send(index_field)) if object.is_a? Resource
-      resp = client.request(:get, "#{api_path}/#{object}", query: query).map do |data|
+      resp = client.request(:get, "#{query.fetch(:_api_path, api_path)}/#{object}", query: query).map do |data|
         new data.merge(_client: client)
       end
       return resp.first if resp.one? || resp.empty?
@@ -50,24 +50,28 @@ module Passwordstate
     end
 
     def self.post(client, data, query = {})
-      data = Hash[data.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
-      query = Hash[query.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
+      data = passwordstateify_hash data
+      query = passwordstateify_hash query
 
-      new client.request(:post, api_path, body: data, query: query).first.merge(_client: client)
+      new [client.request(:post, query.fetch(:_api_path, api_path), body: data, query: query)].flatten.first.merge(_client: client)
     end
 
     def self.put(client, data, query = {})
-      data = Hash[data.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
-      query = Hash[query.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
+      data = passwordstateify_hash data
+      query = passwordstateify_hash query
 
-      client.request :put, api_path, body: data, query: query
+      client.request :put, query.fetch(:_api_path, api_path), body: data, query: query
     end
 
     def self.delete(client, object, query = {})
-      query = Hash[query.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
+      query = passwordstateify_hash query
 
       object = object.send(object.class.send(index_field)) if object.is_a? Resource
-      client.request :delete, "#{api_path}/#{object}", query: query
+      client.request :delete, "#{query.fetch(:_api_path, api_path)}/#{object}", query: query
+    end
+
+    def self.passwordstateify_hash(hash)
+      Hash[hash.map  { |k, v| [ruby_to_passwordstate_field(k), v] }]
     end
 
     def api_path
