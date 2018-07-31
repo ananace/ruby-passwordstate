@@ -3,20 +3,20 @@ module Passwordstate
   class Resource
     attr_reader :client
 
-    def get(client, query = {})
+    def get(query = {})
       set! self.class.get(client, send(self.class.index_field), query)
     end
 
-    def put(client, query = {}, body = {})
+    def put(body = {}, query = {})
       to_send = modified.merge(self.class.index_field => send(self.class.index_field))
       set! self.class.put(client, to_send.merge(body), query).first
     end
 
-    def post(client, query = {}, body = {})
-      set! self.class.post(client, attributes.merge(body), query).first
+    def post(body = {}, query = {})
+      set! self.class.post(client, attributes.merge(body), query)
     end
 
-    def delete(client, query = {})
+    def delete(query = {})
       self.class.delete(client, send(self.class.index_field), query)
     end
 
@@ -26,7 +26,11 @@ module Passwordstate
       old
     end
 
-    def self.search(client, query = {})
+    def stored?
+      !send(self.class.index_field).nil?
+    end
+
+    def self.all(client, query = {})
       query = Hash[query.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
 
       [client.request(:get, api_path, query: query)].flatten.map do |object|
@@ -38,14 +42,18 @@ module Passwordstate
       query = Hash[query.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
 
       object = object.send(object.class.send(index_field)) if object.is_a? Resource
-      new client.request(:get, "#{api_path}/#{object}", query: query).first
+      resp = client.request(:get, "#{api_path}/#{object}", query: query).map do |data|
+        new data.merge(_client: client)
+      end
+      return resp.first if resp.one? || resp.empty?
+      resp
     end
 
     def self.post(client, data, query = {})
       data = Hash[data.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
       query = Hash[query.map { |k, v| [ruby_to_passwordstate_field(k), v] }]
 
-      client.request :post, api_path, body: data, query: query
+      new client.request(:post, api_path, body: data, query: query).first.merge(_client: client)
     end
 
     def self.put(client, data, query = {})
@@ -67,7 +75,7 @@ module Passwordstate
     end
 
     def attributes(ignore_redact = true)
-      Hash[(self.class.send(:accessor_field_names) + self.class.send(:read_field_names)).map do |field|
+      Hash[(self.class.send(:accessor_field_names) + self.class.send(:read_field_names) + self.class.send(:write_field_names)).map do |field|
         redact = self.class.send(:field_options)[field]&.fetch(:redact, false) && !ignore_redact
         value = instance_variable_get("@#{field}".to_sym) unless redact
         value = '[ REDACTED ]' if redact
@@ -115,7 +123,7 @@ module Passwordstate
     end
 
     class << self
-      alias all search
+      alias search all
 
       def api_path(path = nil)
         @api_path = path unless path.nil?
@@ -146,11 +154,18 @@ module Passwordstate
         @read_field_names ||= []
       end
 
+      def write_field_names
+        @write_field_names ||= []
+      end
+
       def field_options
         @field_options ||= {}
       end
 
-      # TODO
+      def read_only
+        # TODO
+      end
+
       def accessor_fields(*fields)
         fields.each do |field|
           if field.is_a? Symbol
@@ -172,15 +187,27 @@ module Passwordstate
           end
         end
       end
+
+      def write_fields(*fields)
+        fields.each do |field|
+          if field.is_a? Symbol
+            write_field_names << field
+            attr_writer field
+          else
+            field_options[write_field_names.last] = field
+          end
+        end
+      end
     end
   end
 
   module Resources
-    autoload :Document,     'passwordstate/resources/document'
-    autoload :Folder,       'passwordstate/resources/folder'
-    autoload :Host,         'passwordstate/resources/host'
-    autoload :PasswordList, 'passwordstate/resources/password_list'
-    autoload :Password,     'passwordstate/resources/password'
-    autoload :Report,       'passwordstate/resources/report'
+    autoload :Document,        'passwordstate/resources/document'
+    autoload :Folder,          'passwordstate/resources/folder'
+    autoload :Host,            'passwordstate/resources/host'
+    autoload :PasswordList,    'passwordstate/resources/password_list'
+    autoload :Password,        'passwordstate/resources/password'
+    autoload :PasswordHistory, 'passwordstate/resources/password'
+    autoload :Report,          'passwordstate/resources/report'
   end
 end

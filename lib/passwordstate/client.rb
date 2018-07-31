@@ -4,7 +4,6 @@ module Passwordstate
   class Client
     USER_AGENT = "RubyPasswordstate/#{Passwordstate::VERSION}".freeze
     DEFAULT_HEADERS = {
-      'content-type' => 'application/json',
       'accept'       => 'application/json',
       'user-agent'   => USER_AGENT
     }.freeze
@@ -53,6 +52,7 @@ module Passwordstate
       if options.key? :body
         req_obj.body = options.fetch(:body)
         req_obj.body = req_obj.body.to_json unless req_obj.body.is_a?(String)
+        req_obj['content-type'] = 'application/json'
       end
 
       req_obj.ntlm_auth(auth_data[:username], auth_data[:password]) if api_type == :winapi
