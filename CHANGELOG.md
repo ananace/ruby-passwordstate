@@ -1,4 +1,4 @@
-## v0.0.2 **Unreleased**
+## v0.0.2 2018-08-14
 
 - Add title and full_path fields to the appropriate resources - almost every resource should now have an obvious human-readable name
 - Fix password searching in password lists
