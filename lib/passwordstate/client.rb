@@ -111,7 +111,7 @@ module Passwordstate
       @http.start
     end
 
-    def print_http(http)
+    def print_http(http, truncate = true)
       return unless logger.debug?
 
       if http.is_a? Net::HTTPRequest
@@ -133,7 +133,9 @@ module Passwordstate
       else
         clean_body = http.body
       end
-      logger.debug "#{dir} #{clean_body.length < 200 ? clean_body : clean_body.slice(0..200) + "... [truncated, #{clean_body.length} Bytes]"}" if clean_body
+
+      clean_body = clean_body.slice(0..2000) + "... [truncated, #{clean_body.length} Bytes total]" if truncate && clean_body.length > 2000
+      logger.debug "#{dir} #{clean_body}" if clean_body
     end
   end
 end
