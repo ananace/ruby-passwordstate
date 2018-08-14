@@ -47,8 +47,10 @@ module Passwordstate
     end
 
     def load(entries)
-      clear && entries.each { |obj| self << obj }
-      true
+      clear && entries.tap do |loaded|
+        loaded.sort! { |obj| obj.send(obj.class.index_field) } if options.fetch(:sort, true)
+      end.each { |obj| self << obj }
+      self
     end
 
     def operation_supported?(operation)
