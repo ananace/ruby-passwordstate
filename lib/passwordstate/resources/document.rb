@@ -8,6 +8,8 @@ module Passwordstate
       read_fields :document_id, { name: 'DocumentID' },
                   :document_name
 
+      alias title document_name
+
       def self.search(client, store, options = {})
         client.request :get, "#{api_path}/#{store}/", query: options
       end

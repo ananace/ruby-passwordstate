@@ -38,6 +38,12 @@ module Passwordstate
                   :generator_name,
                   :policy_name
 
+      alias title password_list
+
+      def self.search(client, query = {})
+        super client, query.merge(_api_path: 'searchpasswordlists')
+      end
+
       def passwords
         Passwordstate::ResourceList.new client, Passwordstate::Resources::Password,
                                         all_path: "passwords/#{password_list_id}",
@@ -46,8 +52,10 @@ module Passwordstate
                                         object_data: { password_list_id: password_list_id }
       end
 
-      def self.search(client, query = {})
-        super client, query.merge(_api_path: 'searchpasswordlists')
+      def full_path(unix = false)
+        [tree_path, password_list].compact.join('\\').tap do |full|
+          full.tr!('\\', '/') if unix
+        end
       end
     end
   end

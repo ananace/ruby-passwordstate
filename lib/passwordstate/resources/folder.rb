@@ -13,12 +13,19 @@ module Passwordstate
                   :site_id, { name: 'SiteID' },
                   :site_location
 
+      alias title folder_name
+
       def password_lists
         Passwordstate::ResourceList.new client, Passwordstate::Resources::PasswordList,
                                         search_query: { tree_path: tree_path },
                                         all_path: 'searchpasswordlists',
                                         all_query: { tree_path: tree_path },
                                         object_data: { nest_undef_folder_id: folder_id }
+      end
+
+      def full_path(unix = false)
+        return tree_path.tr('\\', '/') if unix
+        tree_path
       end
     end
   end
