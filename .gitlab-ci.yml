@@ -14,6 +14,17 @@ rubocop:
   script:
     - bundle exec rubocop
 
+pages:
+  stage: deploy
+  script:
+    - gem install yard
+    - yard doc -o public/
+  artifacts:
+    paths:
+      - public/
+  only:
+    - master
+
 # rspec:
 #   script:
 #   - rspec spec

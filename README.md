@@ -2,6 +2,8 @@
 
 A ruby gem for communicating with a Passwordstate instance
 
+The documentation for the development version can be found at http://iti.gitlab-pages.liu.se/ruby-passwordstate
+
 ## Installation
 
 Add this line to your application's Gemfile:
