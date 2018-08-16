@@ -21,16 +21,18 @@ module Passwordstate
                       :generic_field_9, { name: 'GenericField9' },
                       :generic_field_10, { name: 'GenericField10' },
                       :account_type_id, { name: 'AccountTypeID' },
-                      :account_type,
                       :notes,
                       :url,
                       :password, { redact: true },
                       :expiry_date, { is: Time },
                       :allow_export,
                       :web_user_id, { name: 'WebUser_ID' },
-                      :web_password_id, { name: 'WebPassword_ID' } # rubocop:disable Style/BracesAroundHashParameters
+                      :web_password_id, { name: 'WebPassword_ID' },
+                      :password_list_id, { name: 'PasswordListID' } # Note: POST only  # rubocop:disable Style/BracesAroundHashParameters
 
-      read_fields :password_id, { name: 'PasswordID' } # rubocop:disable Style/BracesAroundHashParameters
+      read_fields :account_type,
+                  :password_id, { name: 'PasswordID' },
+                  :password_list
 
       # Things that can be set in a POST/PUT request
       # TODO: Do this properly
@@ -41,7 +43,6 @@ module Passwordstate
                    :password_reset_schedule,
                    :add_days_to_expiry_date,
                    :script_id, { name: 'ScriptID' },
-                   :password_list_id, { name: 'PasswordListID' }, # POST only
                    :privileged_account_id,
                    :heartbeat_enabled,
                    :heartbeat_schedule,
