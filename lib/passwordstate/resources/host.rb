@@ -18,6 +18,7 @@ module Passwordstate
                       :remote_connection_parameters,
                       :tag,
                       :title,
+                      :discovery_job_id, { name: 'DiscoveryJobID' },
                       :site_id, { name: 'SiteID' },
                       :internal_ip, { name: 'InternalIP', is: IPAddr },
                       :external_ip, { name: 'ExternalIP', is: IPAddr },
@@ -26,7 +27,8 @@ module Passwordstate
                       :virtual_machine_type,
                       :notes
 
-      read_fields :host_id, { name: 'HostID' } # rubocop:disable Style/BracesAroundHashParameters
+      read_fields :host_id, { name: 'HostID' },
+                  :site_location
     end
   end
 end
