@@ -151,6 +151,11 @@ module Passwordstate
         @index_field
       end
 
+      def nil_as_string(opt = nil)
+        @nil_as_string = opt unless opt.nil?
+        @nil_as_string
+      end
+
       def passwordstate_to_ruby_field(field)
         opts = send(:field_options).find { |(_k, v)| v[:name] == field }
         opts&.first || field.to_s.snake_case.to_sym
