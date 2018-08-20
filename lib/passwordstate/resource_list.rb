@@ -48,7 +48,7 @@ module Passwordstate
 
     def load(entries)
       clear && entries.tap do |loaded|
-        loaded.sort! { |obj| obj.send(obj.class.index_field) } if options.fetch(:sort, true)
+        loaded.sort! { |a, b| a.send(a.class.index_field) <=> b.send(b.class.index_field) } if options.fetch(:sort, true)
       end.each { |obj| self << obj }
       self
     end
