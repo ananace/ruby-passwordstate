@@ -32,6 +32,15 @@ module Passwordstate
 
       # TODO: API breaks if all fields aren't included
       nil_as_string true
+
+      def self.available?(client)
+        client.request :get, api_path
+        true
+      rescue Passwordstate::NotFoundError
+        true
+      rescue Passwordstate::ForbiddenError
+        false
+      end
     end
   end
 end

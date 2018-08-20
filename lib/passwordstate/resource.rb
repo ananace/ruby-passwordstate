@@ -30,6 +30,10 @@ module Passwordstate
       !send(self.class.index_field).nil?
     end
 
+    def self.available?(_client)
+      true
+    end
+
     def self.all(client, query = {})
       path = query.fetch(:_api_path, api_path)
       query = passwordstateify_hash query.reject { |k| k.to_s.start_with? '_' }
