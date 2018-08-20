@@ -83,17 +83,20 @@ module Passwordstate
       self.class.instance_variable_get :@api_path
     end
 
-    def attributes(ignore_redact = true)
+    def attributes(opts = {})
+      ignore_redact = opts.fetch(:ignore_redact, true)
+      nil_as_string = opts.fetch(:nil_as_string, self.class.nil_as_string)
       Hash[(self.class.send(:accessor_field_names) + self.class.send(:read_field_names) + self.class.send(:write_field_names)).map do |field|
         redact = self.class.send(:field_options)[field]&.fetch(:redact, false) && !ignore_redact
         value = instance_variable_get("@#{field}".to_sym) unless redact
         value = '[ REDACTED ]' if redact
+        value = '' if value.nil? && nil_as_string
         [field, value]
       end].reject { |_k, v| v.nil? }
     end
 
     def inspect
-      "#{to_s[0..-2]} #{attributes(false).reject { |_k, v| v.nil? }.map { |k, v| "@#{k}=#{v.inspect}" }.join(', ')}>"
+      "#{to_s[0..-2]} #{attributes(nil_as_string: false, ignore_redact: false).reject { |_k, v| v.nil? }.map { |k, v| "@#{k}=#{v.inspect}" }.join(', ')}>"
     end
 
     protected

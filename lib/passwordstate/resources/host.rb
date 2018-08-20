@@ -29,6 +29,9 @@ module Passwordstate
 
       read_fields :host_id, { name: 'HostID' },
                   :site_location
+
+      # TODO: API breaks if all fields aren't included
+      nil_as_string true
     end
   end
 end
