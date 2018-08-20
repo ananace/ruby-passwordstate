@@ -34,7 +34,7 @@ module Passwordstate
 
     def hosts
       ResourceList.new self, Passwordstate::Resources::Host,
-                       only: %i[all search post delete]
+                       except: %i[search put]
     end
 
     def passwords
