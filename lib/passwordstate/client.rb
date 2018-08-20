@@ -91,8 +91,8 @@ module Passwordstate
 
         raise Passwordstate::HTTPError.new_by_code(res_obj.code, req_obj, res_obj, data&.fetch('errors', []) || [])
       else
-        return res_obj.body if options.fetch(:allow_html, false)
-        raise Passwordstate::PasswordstateError, 'Response was not parseable as JSON'
+        return res_obj.body if res_obj.is_a?(Net::HTTPSuccess) && options.fetch(:allow_html, true)
+        raise Passwordstate::HTTPError.new_by_code(res_obj.code, req_obj, res_obj, [{ 'message' => res_obj.body }])
       end
     end
 
