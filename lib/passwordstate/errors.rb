@@ -10,16 +10,15 @@ module Passwordstate
       @response = response
       @errors = errors
 
-      super <<-ERRMSG
-Passwordstate responded with an error to the request;
-#{errors.map { |err| err['message'] || err['phrase'] }.join(', ')}
-ERRMSG
+      super "Passwordstate responded with an error to the request:\n#{errors.map { |err| err['message'] || err['phrase'] }.join('; ')}"
     end
 
     def self.new_by_code(code, req, res, errors = [])
       code_i = code.to_i
 
       errtype = nil
+      errtype ||= UnauthorizedError if code_i == 401
+      errtype ||= ForbiddenError if code_i == 403
       errtype ||= NotFoundError if code_i == 404
       errtype ||= ClientError if code_i >= 400 && code_i < 500
       errtype ||= ServerError if code_i >= 500 && code_i < 600
@@ -36,11 +35,16 @@ ERRMSG
     end
   end
 
+  # 401
+  class UnauthorizedError < ClientError
+  end
+
+  # 403
+  class ForbiddenError < ClientError
+  end
+
   # 404
   class NotFoundError < ClientError
-    def initialize(code, req, res, errors = [])
-      super
-    end
   end
 
   # 5xx
