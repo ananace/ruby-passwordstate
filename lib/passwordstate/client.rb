@@ -62,6 +62,14 @@ module Passwordstate
       end
     end
 
+    def version?(compare)
+      Gem::Dependency.new(nil, compare).match(nil, version)
+    end
+
+    def require_version(compare)
+      raise "Your version of Passwordstate (#{version}) doesn't support the requested feature" unless version? compare
+    end
+
     def request(method, api_path, options = {})
       uri = URI(server_url + "/#{api_type}/" + api_path)
       uri.query = URI.encode_www_form(options.fetch(:query)) if options.key? :query
@@ -77,7 +85,7 @@ module Passwordstate
       req_obj.ntlm_auth(auth_data[:username], auth_data[:password]) if api_type == :winapi
       headers.each { |h, v| req_obj[h] = v }
       req_obj['APIKey'] = auth_data[:apikey] if api_type == :api
-      req_obj['Reason'] = options.fetch(:reason) if options.key? :reason
+      req_obj['Reason'] = options.fetch(:reason) if options.key?(:reason) && version?('>= 8.4.8449')
 
       print_http req_obj
       res_obj = http.request req_obj
