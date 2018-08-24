@@ -77,6 +77,7 @@ module Passwordstate
       req_obj.ntlm_auth(auth_data[:username], auth_data[:password]) if api_type == :winapi
       headers.each { |h, v| req_obj[h] = v }
       req_obj['APIKey'] = auth_data[:apikey] if api_type == :api
+      req_obj['Reason'] = options.fetch(:reason) if options.key? :reason
 
       print_http req_obj
       res_obj = http.request req_obj
