@@ -63,7 +63,7 @@ module Passwordstate
     end
 
     def version?(compare)
-      Gem::Dependency.new(nil, compare).match(nil, version)
+      Gem::Dependency.new(to_s, compare).match?(to_s, version)
     end
 
     def require_version(compare)
