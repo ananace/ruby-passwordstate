@@ -62,6 +62,11 @@ module Passwordstate
                                         only: :all
       end
 
+      def permissions
+        client.require_version('>= 8.4.8449')
+        PasswordPermission.new(_client: client, password_id: password_id)
+      end
+
       def delete(recycle = false, query = {})
         super query.merge(move_to_recycle_bin: recycle)
       end
@@ -130,6 +135,14 @@ module Passwordstate
       def get
         raise 'Not applicable'
       end
+    end
+
+    class PasswordPermission < Permission
+      api_path 'passwordpermissions'
+
+      index_field :password_id
+
+      read_fields :password_id, { name: 'PasswordID' } # rubocop:disable Style/BracesAroundHashParameters
     end
   end
 end

@@ -52,11 +52,24 @@ module Passwordstate
                                         object_data: { password_list_id: password_list_id }
       end
 
+      def permissions
+        client.require_version('>= 8.4.8449')
+        PasswordListPermission.new(_client: client, password_list_id: password_list_id)
+      end
+
       def full_path(unix = false)
         [tree_path, password_list].compact.join('\\').tap do |full|
           full.tr!('\\', '/') if unix
         end
       end
+    end
+
+    class PasswordListPermission < Permission
+      api_path 'passwordlistpermissions'
+
+      index_field :password_list_id
+
+      read_fields :password_list_id, { name: 'PasswordListID' } # rubocop:disable Style/BracesAroundHashParameters
     end
   end
 end

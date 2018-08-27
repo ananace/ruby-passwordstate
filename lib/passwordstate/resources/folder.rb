@@ -34,16 +34,10 @@ module Passwordstate
       end
     end
 
-    class FolderPermission < Passwordstate::Resource
+    class FolderPermission < Permission
       api_path 'folderpermissions'
 
       index_field :folder_id
-
-      # TODO: Only one of the apply_* can be set at a time
-      accessor_fields :permission,
-                      :apply_permissions_for_user_id, { name: 'ApplyPermissionsForUserID' },
-                      :apply_permissions_for_security_group_id, { name: 'ApplyPermissionsForSecurityGroupID' },
-                      :apply_permissions_for_security_group_name
 
       read_fields :folder_id, { name: 'FolderID' } # rubocop:disable Style/BracesAroundHashParameters
     end

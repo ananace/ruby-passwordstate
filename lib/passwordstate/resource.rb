@@ -223,12 +223,16 @@ module Passwordstate
   end
 
   module Resources
-    autoload :Document,        'passwordstate/resources/document'
-    autoload :Folder,          'passwordstate/resources/folder'
-    autoload :Host,            'passwordstate/resources/host'
-    autoload :PasswordList,    'passwordstate/resources/password_list'
-    autoload :Password,        'passwordstate/resources/password'
-    autoload :PasswordHistory, 'passwordstate/resources/password'
-    autoload :Report,          'passwordstate/resources/report'
+    autoload :Document,               'passwordstate/resources/document'
+    autoload :Folder,                 'passwordstate/resources/folder'
+    autoload :FolderPermission,       'passwordstate/resources/folder'
+    autoload :Host,                   'passwordstate/resources/host'
+    autoload :PasswordList,           'passwordstate/resources/password_list'
+    autoload :PasswordListPermission, 'passwordstate/resources/password_list'
+    autoload :Password,               'passwordstate/resources/password'
+    autoload :PasswordHistory,        'passwordstate/resources/password'
+    autoload :PasswordPermission,     'passwordstate/resources/password_list'
+    autoload :Permission,             'passwordstate/resources/permission'
+    autoload :Report,                 'passwordstate/resources/report'
   end
 end
