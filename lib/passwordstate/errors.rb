@@ -23,6 +23,11 @@ module Passwordstate
       errtype ||= ClientError if code_i >= 400 && code_i < 500
       errtype ||= ServerError if code_i >= 500 && code_i < 600
 
+      if code_i == 302 && res['location'].start_with?('/error/generalerror.aspx?')
+        errtype ||= ServerError
+        errors = [{ 'phrase' => 'Response code 302, most likely meaning an authorization error' }]
+      end
+
       errtype ||= HTTPError
       errtype.new(code_i, req, res, errors)
     end
