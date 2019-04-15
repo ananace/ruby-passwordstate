@@ -4,8 +4,8 @@ module Passwordstate
   class Client
     USER_AGENT = "RubyPasswordstate/#{Passwordstate::VERSION}".freeze
     DEFAULT_HEADERS = {
-      'accept'       => 'application/json',
-      'user-agent'   => USER_AGENT
+      'accept' => 'application/json',
+      'user-agent' => USER_AGENT
     }.freeze
 
     attr_accessor :server_url, :auth_data, :headers, :validate_certificate
@@ -103,11 +103,13 @@ module Passwordstate
       data = JSON.parse(res_obj.body) rescue nil
       if data
         return data if res_obj.is_a? Net::HTTPSuccess
+
         data = data&.first
 
         raise Passwordstate::HTTPError.new_by_code(res_obj.code, req_obj, res_obj, data&.fetch('errors', []) || [])
       else
         return res_obj.body if res_obj.is_a?(Net::HTTPSuccess) && options.fetch(:allow_html, true)
+
         raise Passwordstate::HTTPError.new_by_code(res_obj.code, req_obj, res_obj, [{ 'message' => res_obj.body }])
       end
     end
@@ -144,6 +146,7 @@ module Passwordstate
       logger.debug dir
 
       return if http.body.nil?
+
       clean_body = JSON.parse(http.body) rescue nil
       if clean_body
         clean_body = clean_body.each { |k, v| v.replace('[ REDACTED ]') if k.is_a?(String) && %w[password apikey].include?(k.downcase) }.to_json if http.body
