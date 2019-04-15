@@ -9,6 +9,7 @@ module Passwordstate
     }.freeze
 
     attr_accessor :server_url, :auth_data, :headers, :validate_certificate
+    attr_reader :timeout
     attr_writer :api_type
 
     def initialize(url, options = {})
@@ -17,6 +18,7 @@ module Passwordstate
       @headers = DEFAULT_HEADERS
       @auth_data = options.select { |k, _v| %i[apikey username password].include? k }
       @api_type = options.fetch(:api_type) if options.key? :api_type
+      @timeout = options.fetch(:timeout, 0)
     end
 
     def logger
@@ -25,6 +27,11 @@ module Passwordstate
 
     def api_type
       @api_type || (auth_data.key?(:apikey) ? :api : :winapi)
+    end
+
+    def timeout=(sec)
+      @timeout = sec
+      @http.read_timeout = sec if @http
     end
 
     def folders
@@ -115,6 +122,7 @@ module Passwordstate
       @http ||= Net::HTTP.new server_url.host, server_url.port
       return @http if @http.active?
 
+      @http.read_timeout = @timeout if @timeout
       @http.use_ssl = server_url.scheme == 'https'
       @http.verify_mode = validate_certificate ? ::OpenSSL::SSL::VERIFY_NONE : nil
       @http.start
