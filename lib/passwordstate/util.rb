@@ -11,7 +11,9 @@ module Net
         password: password
       }
       @ntlm_auth_information[:domain] = domain unless domain.nil?
-      @ntlm_auth_options = {}
+      @ntlm_auth_options = {
+        ntlmv2: true
+      }
       @ntlm_auth_options[:workstation] = workstation unless workstation.nil?
     end
   end
@@ -59,7 +61,7 @@ module Passwordstate
 
       if challenge && res.code == '401'
         type2 = Net::NTLM::Message.decode64 challenge
-        type3 = type2.response(req.ntlm_auth_information, req.ntlm_auth_options)
+        type3 = type2.response(req.ntlm_auth_information, req.ntlm_auth_options.dup)
 
         req['authorization'] = 'NTLM ' + type3.encode64
         req.body_stream.rewind if req.body_stream

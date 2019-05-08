@@ -18,7 +18,7 @@ module Passwordstate
       @headers = DEFAULT_HEADERS
       @auth_data = options.select { |k, _v| %i[apikey username password].include? k }
       @api_type = options.fetch(:api_type) if options.key? :api_type
-      @timeout = options.fetch(:timeout, 0)
+      @timeout = options.fetch(:timeout, 15)
     end
 
     def logger
