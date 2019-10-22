@@ -44,10 +44,15 @@ module Passwordstate
     end
 
     def self.get(client, object, query = {})
+      object = object.send(object.class.send(index_field)) if object.is_a? Resource
+
+      if query[:_bare]
+        return new _client: client, index_field => object
+      end
+
       path = query.fetch(:_api_path, api_path)
       query = passwordstateify_hash query.reject { |k| k.to_s.start_with? '_' }
 
-      object = object.send(object.class.send(index_field)) if object.is_a? Resource
       resp = client.request(:get, "#{path}/#{object}", query: query).map do |data|
         new data.merge(_client: client)
       end
