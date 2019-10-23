@@ -1,4 +1,4 @@
-## v0.0.3 **Unreleased**
+## v0.0.3 2019-10-23
 
 - Added method to check if resource types are available
 - Added `_bare: true` flag on resource getter to create a bare object for
