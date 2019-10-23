@@ -2,6 +2,7 @@ module Passwordstate
   class ResourceList < Array
     Array.public_instance_methods(false).each do |method|
       next if %i[reject select slice clear inspect].include?(method.to_sym)
+
       class_eval <<-EVAL, __FILE__, __LINE__ + 1
         def #{method}(*args)
           lazy_load unless @loaded
@@ -57,6 +58,7 @@ module Passwordstate
       return nil unless %i[search all get post put delete].include?(operation)
       return false if options.key?(:only) && !options[:only].include?(operation)
       return false if options.key?(:except) && options[:except].include?(operation)
+
       !options.fetch("#{operation}_path".to_sym, '').nil?
     end
 
@@ -66,6 +68,7 @@ module Passwordstate
 
     def create(data)
       raise 'Operation not supported' unless operation_supported?(:post)
+
       obj = resource.new options.fetch(:object_data, {}).merge(data).merge(_client: client)
       obj.post
       obj
@@ -73,6 +76,7 @@ module Passwordstate
 
     def search(query = {})
       raise 'Operation not supported' unless operation_supported?(:search)
+
       api_path = options.fetch(:search_path, resource.api_path)
       query = options.fetch(:search_query, {}).merge(query)
 
@@ -81,6 +85,7 @@ module Passwordstate
 
     def all(query = {})
       raise 'Operation not supported' unless operation_supported?(:all)
+
       api_path = options.fetch(:all_path, resource.api_path)
       query = options.fetch(:all_query, {}).merge(query)
 
@@ -89,6 +94,7 @@ module Passwordstate
 
     def get(id, query = {})
       raise 'Operation not supported' unless operation_supported?(:get)
+
       api_path = options.fetch(:get_path, resource.api_path)
       query = options.fetch(:get_query, {}).merge(query)
 
@@ -97,6 +103,7 @@ module Passwordstate
 
     def post(data, query = {})
       raise 'Operation not supported' unless operation_supported?(:post)
+
       api_path = options.fetch(:post_path, resource.api_path)
       query = options.fetch(:post_query, {}).merge(query)
 
@@ -105,6 +112,7 @@ module Passwordstate
 
     def put(data, query = {})
       raise 'Operation not supported' unless operation_supported?(:put)
+
       api_path = options.fetch(:put_path, resource.api_path)
       query = options.fetch(:put_query, {}).merge(query)
 
@@ -113,6 +121,7 @@ module Passwordstate
 
     def delete(id, query = {})
       raise 'Operation not supported' unless operation_supported?(:delete)
+
       api_path = options.fetch(:delete_path, resource.api_path)
       query = options.fetch(:delete_query, {}).merge(query)
 

@@ -57,6 +57,7 @@ module Passwordstate
 
       def history
         raise 'Password history only available on stored passwords' unless stored?
+
         Passwordstate::ResourceList.new client, PasswordHistory,
                                         all_path: "passwordhistory/#{password_id}",
                                         only: :all
@@ -73,6 +74,7 @@ module Passwordstate
 
       def add_dependency(data = {})
         raise 'Password dependency creation only available for stored passwords' unless stored?
+
         client.request :post, 'dependencies', body: self.class.passwordstatify_hash(data.merge(password_id: password_id))
       end
 
@@ -87,6 +89,7 @@ module Passwordstate
       def self.generate(client, options = {})
         results = client.request(:get, 'generatepassword', query: options).map { |r| r['Password'] }
         return results.first if results.count == 1
+
         results
       end
     end

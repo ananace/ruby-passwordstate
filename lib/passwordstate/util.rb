@@ -33,6 +33,7 @@ class String
 
   def find_line(&_block)
     raise ArgumentError, 'No block given' unless block_given?
+
     each_line do |line|
       return line if yield line
     end
@@ -76,4 +77,4 @@ module Passwordstate
   end
 end
 
-Net::HTTP.send :prepend, Passwordstate::NetHTTPExtensions unless Net::HTTP.ancestors.include? Passwordstate::NetHTTPExtensions
+Net::HTTP.prepend Passwordstate::NetHTTPExtensions unless Net::HTTP.ancestors.include? Passwordstate::NetHTTPExtensions

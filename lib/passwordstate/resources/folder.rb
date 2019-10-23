@@ -30,6 +30,7 @@ module Passwordstate
 
       def full_path(unix = false)
         return tree_path.tr('\\', '/') if unix
+
         tree_path
       end
     end
