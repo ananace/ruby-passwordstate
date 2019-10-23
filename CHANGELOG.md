@@ -1,3 +1,7 @@
+## v0.0.4 2019-10-23
+
+- Fixed a client request issue due to a rubocop change
+
 ## v0.0.3 2019-10-23
 
 - Added method to check if resource types are available
