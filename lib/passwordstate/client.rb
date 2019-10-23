@@ -80,7 +80,7 @@ module Passwordstate
     def request(method, api_path, options = {})
       uri = URI(server_url + "/#{api_type}/" + api_path)
       uri.query = URI.encode_www_form(options.fetch(:query)) if options.key? :query
-      uri.query = nil unless uri.query&.any?
+      uri.query = nil if uri.query.nil? || uri.query.empty?
 
       req_obj = Net::HTTP.const_get(method.to_s.capitalize.to_sym).new uri
       if options.key? :body
