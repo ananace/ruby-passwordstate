@@ -95,6 +95,13 @@ module Passwordstate
     def get(id, query = {})
       raise 'Operation not supported' unless operation_supported?(:get)
 
+      if query.empty?
+        existing = entries.find do |entry|
+          entry.send(entry.class.index_field) == id
+        end
+        return existing if existing
+      end
+
       api_path = options.fetch(:get_path, resource.api_path)
       query = options.fetch(:get_query, {}).merge(query)
 
