@@ -95,7 +95,7 @@ module Passwordstate
     def get(id, query = {})
       raise 'Operation not supported' unless operation_supported?(:get)
 
-      if query.empty?
+      if query.empty? && !entries.empty?
         existing = entries.find do |entry|
           entry.send(entry.class.index_field) == id
         end
