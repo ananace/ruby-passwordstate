@@ -77,9 +77,9 @@ module Passwordstate
       raise "Your version of Passwordstate (#{version}) doesn't support the requested feature" unless version? compare
     end
 
-    def request(method, api_path, options = {})
+    def request(method, api_path, query: nil, reason: nil, **options)
       uri = URI(server_url + "/#{api_type}/" + api_path)
-      uri.query = URI.encode_www_form(options.fetch(:query)) if options.key? :query
+      uri.query = URI.encode_www_form(query) unless query.nil?
       uri.query = nil if uri.query.nil? || uri.query.empty?
 
       req_obj = Net::HTTP.const_get(method.to_s.capitalize.to_sym).new uri
@@ -92,7 +92,7 @@ module Passwordstate
       req_obj.ntlm_auth(auth_data[:username], auth_data[:password]) if api_type == :winapi
       headers.each { |h, v| req_obj[h] = v }
       req_obj['APIKey'] = auth_data[:apikey] if api_type == :api
-      req_obj['Reason'] = options.fetch(:reason) if options.key?(:reason) && version?('>= 8.4.8449')
+      req_obj['Reason'] = reason if !reason.nil? && version?('>= 8.4.8449')
 
       print_http req_obj
       res_obj = http.request req_obj

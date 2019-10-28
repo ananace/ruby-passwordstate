@@ -36,9 +36,10 @@ module Passwordstate
 
     def self.all(client, query = {})
       path = query.fetch(:_api_path, api_path)
+      reason = query.delete(:_reason)
       query = passwordstateify_hash query.reject { |k| k.to_s.start_with? '_' }
 
-      [client.request(:get, path, query: query)].flatten.map do |object|
+      [client.request(:get, path, query: query, reason: reason)].flatten.map do |object|
         new object.merge(_client: client)
       end
     end
@@ -49,9 +50,10 @@ module Passwordstate
       return new _client: client, index_field => object if query[:_bare]
 
       path = query.fetch(:_api_path, api_path)
+      reason = query.delete(:_reason)
       query = passwordstateify_hash query.reject { |k| k.to_s.start_with? '_' }
 
-      resp = client.request(:get, "#{path}/#{object}", query: query).map do |data|
+      resp = client.request(:get, "#{path}/#{object}", query: query, reason: reason).map do |data|
         new data.merge(_client: client)
       end
       return resp.first if resp.one? || resp.empty?
@@ -61,26 +63,29 @@ module Passwordstate
 
     def self.post(client, data, query = {})
       path = query.fetch(:_api_path, api_path)
+      reason = query.delete(:_reason)
       data = passwordstateify_hash data
       query = passwordstateify_hash query.reject { |k| k.to_s.start_with? '_' }
 
-      new [client.request(:post, path, body: data, query: query)].flatten.first.merge(_client: client)
+      new [client.request(:post, path, body: data, query: query, reason: reason)].flatten.first.merge(_client: client)
     end
 
     def self.put(client, data, query = {})
       path = query.fetch(:_api_path, api_path)
+      reason = query.delete(:_reason)
       data = passwordstateify_hash data
       query = passwordstateify_hash query.reject { |k| k.to_s.start_with? '_' }
 
-      client.request :put, path, body: data, query: query
+      client.request :put, path, body: data, query: query, reason: reason
     end
 
     def self.delete(client, object, query = {})
       path = query.fetch(:_api_path, api_path)
+      reason = query.delete(:_reason)
       query = passwordstateify_hash query.reject { |k| k.to_s.start_with? '_' }
 
       object = object.send(object.class.send(index_field)) if object.is_a? Resource
-      client.request :delete, "#{path}/#{object}", query: query
+      client.request :delete, "#{path}/#{object}", query: query, reason: reason
     end
 
     def self.passwordstateify_hash(hash)
