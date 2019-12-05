@@ -58,7 +58,8 @@ module Passwordstate
       def history
         raise 'Password history only available on stored passwords' unless stored?
 
-        Passwordstate::ResourceList.new client, PasswordHistory,
+        Passwordstate::ResourceList.new PasswordHistory,
+                                        client: client,
                                         all_path: "passwordhistory/#{password_id}",
                                         only: :all
       end

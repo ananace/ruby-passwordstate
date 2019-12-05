@@ -16,7 +16,8 @@ module Passwordstate
       alias title folder_name
 
       def password_lists
-        Passwordstate::ResourceList.new client, Passwordstate::Resources::PasswordList,
+        Passwordstate::ResourceList.new Passwordstate::Resources::PasswordList,
+                                        client: client,
                                         search_query: { tree_path: tree_path },
                                         all_path: 'searchpasswordlists',
                                         all_query: { tree_path: tree_path },

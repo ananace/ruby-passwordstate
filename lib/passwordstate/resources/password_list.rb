@@ -45,7 +45,8 @@ module Passwordstate
       end
 
       def passwords
-        Passwordstate::ResourceList.new client, Passwordstate::Resources::Password,
+        Passwordstate::ResourceList.new Passwordstate::Resources::Password,
+                                        client: client,
                                         all_path: "passwords/#{password_list_id}",
                                         all_query: { query_all: nil },
                                         search_path: "searchpasswords/#{password_list_id}",
