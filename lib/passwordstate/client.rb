@@ -35,21 +35,25 @@ module Passwordstate
     end
 
     def folders
-      ResourceList.new self, Passwordstate::Resources::Folder,
+      ResourceList.new Passwordstate::Resources::Folder,
+                       client: self,
                        only: %i[all search post]
     end
 
     def hosts
-      ResourceList.new self, Passwordstate::Resources::Host,
+      ResourceList.new Passwordstate::Resources::Host,
+                       client: self,
                        except: %i[search put]
     end
 
     def passwords
-      ResourceList.new self, Passwordstate::Resources::Password
+      ResourceList.new Passwordstate::Resources::Password,
+                       client: self
     end
 
     def password_lists
-      ResourceList.new self, Passwordstate::Resources::PasswordList,
+      ResourceList.new Passwordstate::Resources::PasswordList,
+                       client: self,
                        except: %i[put delete]
     end
 

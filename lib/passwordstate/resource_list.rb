@@ -28,7 +28,7 @@ module Passwordstate
 
     attr_reader :client, :resource, :options
 
-    def initialize(client, resource, options = {})
+    def initialize(resource, client:, **options)
       @client = client
       @resource = resource
       @loaded = false
