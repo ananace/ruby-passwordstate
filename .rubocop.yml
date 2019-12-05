@@ -22,7 +22,7 @@ Style/SafeNavigation:
 Layout/ClosingHeredocIndentation:
   Enabled: false
 
-Layout/IndentHeredoc:
+Layout/HeredocIndentation:
   Enabled: false
 
 Metrics/PerceivedComplexity:
@@ -42,10 +42,6 @@ Metrics/LineLength:
 
 Metrics/AbcSize:
   Enabled: false
-
-Performance/FixedSize:
-  Exclude:
-    - 'test/**/*'
 
 Metrics/BlockLength:
   Exclude:
