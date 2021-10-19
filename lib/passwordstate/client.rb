@@ -108,10 +108,11 @@ module Passwordstate
       if data
         return data if res_obj.is_a? Net::HTTPSuccess
 
-        data = data&.first
-        data = data.fetch('errors', []) if data.is_a? Hash
+        parsed = data&.first
+        parsed = data.fetch('errors', []) if data.is_a?(Hash) && data.key?('errors')
+        parsed = [data]
 
-        raise Passwordstate::HTTPError.new_by_code(res_obj.code, req_obj, res_obj, data || [])
+        raise Passwordstate::HTTPError.new_by_code(res_obj.code, req_obj, res_obj, parsed || [])
       else
         return res_obj.body if res_obj.is_a?(Net::HTTPSuccess) && options.fetch(:allow_html, true)
 

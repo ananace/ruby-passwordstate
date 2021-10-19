@@ -1,10 +1,10 @@
 require 'logging'
+require 'passwordstate/version'
 require 'passwordstate/client'
 require 'passwordstate/errors'
 require 'passwordstate/resource'
 require 'passwordstate/resource_list'
 require 'passwordstate/util'
-require 'passwordstate/version'
 
 module Passwordstate
   def self.debug!
