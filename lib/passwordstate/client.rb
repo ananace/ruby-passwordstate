@@ -108,7 +108,7 @@ module Passwordstate
       if data
         return data if res_obj.is_a? Net::HTTPSuccess
 
-        parsed = data&.first
+        data = data.first if data.is_a? Array
         parsed = data.fetch('errors', []) if data.is_a?(Hash) && data.key?('errors')
         parsed = [data]
 
