@@ -10,7 +10,7 @@ module Passwordstate
       @response = response
       @errors = errors
 
-      super "Passwordstate responded with an error to the request:\n#{errors.map { |err| err['message'] || err['phrase'] }.join('; ')}"
+      super "Passwordstate responded with an error to the request:\n#{errors.map { |err| err['message'] || err['phrase'] || err['error'] }.join('; ')}"
     end
 
     def self.new_by_code(code, req, res, errors = [])
