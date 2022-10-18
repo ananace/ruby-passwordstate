@@ -2,6 +2,7 @@
 
 module Passwordstate
   # A simple resource DSL
+  # rubocop:disable Metrics/ClassLength This DSL class will be large
   class Resource
     attr_reader :client
 
@@ -100,17 +101,11 @@ module Passwordstate
       client.request :delete, "#{path}/#{object}", query: query, reason: reason
     end
 
-    def self.passwordstateify_hash(hash)
-      hash.transform_keys { |k| ruby_to_passwordstate_field(k) }
-    end
-
     def api_path
       self.class.instance_variable_get :@api_path
     end
 
-    def attributes(**opts)
-      ignore_redact = opts.fetch(:ignore_redact, true)
-      atify = opts.fetch(:atify, false)
+    def attributes(ignore_redact: true, atify: false, **opts)
       nil_as_string = opts.fetch(:nil_as_string, self.class.nil_as_string)
       (self.class.send(:accessor_field_names) + self.class.send(:read_field_names) + self.class.send(:write_field_names)).to_h do |field|
         redact = self.class.send(:field_options)[field]&.fetch(:redact, false) && !ignore_redact
@@ -210,6 +205,10 @@ module Passwordstate
         end
       end
 
+      def passwordstateify_hash(hash)
+        hash.transform_keys { |k| ruby_to_passwordstate_field(k) }
+      end
+
       def passwordstate_to_ruby_field(field)
         opts = send(:field_options).find { |(_k, v)| v[:name] == field }
         opts&.first || field.to_s.snake_case.to_sym
@@ -275,6 +274,7 @@ module Passwordstate
       end
     end
   end
+  # rubocop:enable Metrics/ClassLength
 
   module Resources
     autoload :ActiveDirectory,             'passwordstate/resources/active_directory'
