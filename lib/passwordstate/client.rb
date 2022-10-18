@@ -142,7 +142,9 @@ module Passwordstate
     end
 
     def pretty_print(pp)
-      pp.pp(self)
+      return pp.pp self if respond_to? :mocha_inspect
+
+      pp.pp_object self
     end
 
     alias inspect pretty_print_inspect
