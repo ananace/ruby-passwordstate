@@ -15,7 +15,7 @@ rubocop:
     - bundle exec rubocop
 
 pages:
-  stage: deploy
+  before_script: []
   script:
     - gem install yard
     - yard doc -o public/
@@ -25,6 +25,6 @@ pages:
   only:
     - master
 
-# rspec:
-#   script:
-#   - rspec spec
+rake:
+  script:
+    - bundle exec rake

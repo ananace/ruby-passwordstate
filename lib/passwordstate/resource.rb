@@ -1,24 +1,33 @@
 # frozen_string_literal: true
 
 module Passwordstate
-  # A simple resource DSL
+  # A simple resource DSL helper
+  #
   # rubocop:disable Metrics/ClassLength This DSL class will be large
   class Resource
     attr_reader :client
 
+    # Update the object based off of up-to-date upstream data
+    # @return [Resource] self
     def get(**query)
       set! self.class.get(client, send(self.class.index_field), **query)
     end
 
+    # Push any unapplied changes to the object
+    # @return [Resource] self
     def put(body = {}, **query)
       to_send = modified.merge(self.class.index_field => send(self.class.index_field))
       set! self.class.put(client, to_send.merge(body), **query).first
     end
 
+    # Create the object based off of provided information
+    # @return [Resource] self
     def post(body = {}, **query)
       set! self.class.post(client, attributes.merge(body), **query)
     end
 
+    # Delete the object
+    # @return [Resource] self
     def delete(**query)
       self.class.delete(client, send(self.class.index_field), **query)
     end
@@ -29,14 +38,17 @@ module Passwordstate
       old
     end
 
+    # Is the object stored on the Passwordstate server
     def stored?
       !send(self.class.index_field).nil?
     end
 
+    # Check if the resource type is available on the connected Passwordstate server
     def self.available?(_client)
       true
     end
 
+    # Retrieve all accessible instances of the resource type, requires the method :get
     def self.all(client, **query)
       raise NotAcceptableError, "Read is not implemented for #{self}" unless acceptable_methods.include? :get
 
@@ -49,6 +61,7 @@ module Passwordstate
       end
     end
 
+    # Retrieve a specific instance of the resource type, requires the method :get
     def self.get(client, object, **query)
       raise NotAcceptableError, "Read is not implemented for #{self}" unless acceptable_methods.include? :get
 
@@ -68,6 +81,7 @@ module Passwordstate
       resp
     end
 
+    # Create a new instance of the resource type, requires the method :post
     def self.post(client, data, **query)
       raise NotAcceptableError, "Create is not implemented for #{self}" unless acceptable_methods.include? :post
 
@@ -79,6 +93,7 @@ module Passwordstate
       new [client.request(:post, path, body: data, query: query, reason: reason)].flatten.first.merge(_client: client)
     end
 
+    # Push new data to an instance of the resource type, requires the method :put
     def self.put(client, data, **query)
       raise NotAcceptableError, "Update is not implemented for #{self}" unless acceptable_methods.include? :put
 
@@ -90,6 +105,7 @@ module Passwordstate
       client.request :put, path, body: data, query: query, reason: reason
     end
 
+    # Delete an instance of the resource type, requires the method :delete
     def self.delete(client, object, **query)
       raise NotAcceptableError, "Delete is not implemented for #{self}" unless acceptable_methods.include? :delete
 
@@ -101,10 +117,11 @@ module Passwordstate
       client.request :delete, "#{path}/#{object}", query: query, reason: reason
     end
 
-    def api_path
-      self.class.instance_variable_get :@api_path
-    end
-
+    # Get a hash of all active attributes on the resource instance
+    #
+    # @param ignore_redact [Boolean] Should any normally redacted fields be displayed in clear-text
+    # @param atify [Boolean] Should the resulting hash be returned with instance variable names ('@'-prefixed)
+    # @option opts nil_as_string [Boolean] (resource dependent) Should nil values be treated as the empty string
     def attributes(ignore_redact: true, atify: false, **opts)
       nil_as_string = opts.fetch(:nil_as_string, self.class.nil_as_string)
       (self.class.send(:accessor_field_names) + self.class.send(:read_field_names) + self.class.send(:write_field_names)).to_h do |field|
@@ -135,6 +152,10 @@ module Passwordstate
     end
 
     protected
+
+    def api_path
+      self.class.instance_variable_get :@api_path
+    end
 
     def modified
       attribs = attributes
@@ -175,21 +196,25 @@ module Passwordstate
     class << self
       alias search all
 
+      # Get/Set the API path for the resource type
       def api_path(path = nil)
         @api_path = path unless path.nil?
         @api_path
       end
 
+      # Get/Set the index field for the resource type
       def index_field(field = nil)
         @index_field = field unless field.nil?
         @index_field
       end
 
+      # Get/Set whether the resource type requires nil values to be handled as the empty string
       def nil_as_string(opt = nil)
         @nil_as_string = opt unless opt.nil?
         @nil_as_string
       end
 
+      # Get/Set acceptable CRUD methods for the resource type
       def acceptable_methods(*meths)
         if meths.empty?
           @acceptable_methods || %i[post get put delete]
@@ -205,15 +230,18 @@ module Passwordstate
         end
       end
 
+      # Convert a hash from Ruby syntax to Passwordstate syntax
       def passwordstateify_hash(hash)
         hash.transform_keys { |k| ruby_to_passwordstate_field(k) }
       end
 
+      # Convert a Passwordstate field name into Ruby syntax
       def passwordstate_to_ruby_field(field)
         opts = send(:field_options).find { |(_k, v)| v[:name] == field }
         opts&.first || field.to_s.snake_case.to_sym
       end
 
+      # Convert a Ruby field name into Passwordstate syntax
       def ruby_to_passwordstate_field(field)
         send(:field_options)[field]&.[](:name) || field.to_s.camel_case
       end

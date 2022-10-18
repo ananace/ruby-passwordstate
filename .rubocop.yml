@@ -35,11 +35,11 @@ Metrics/CyclomaticComplexity:
 Style/RescueModifier:
   Enabled: false
 
+Layout/LineLength:
+  Max: 140
+
 Metrics/MethodLength:
   Max: 40
-
-Metrics/LineLength:
-  Max: 190
 
 Metrics/AbcSize:
   Enabled: false

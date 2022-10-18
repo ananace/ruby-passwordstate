@@ -40,7 +40,8 @@ module Passwordstate
         private
 
         def validate_store!(store)
-          raise ArgumentError, 'Store must be one of password, passwordlist, folder' unless %i[password passwordlist folder].include?(store.to_s.downcase.to_sym)
+          raise ArgumentError, 'Store must be one of password, passwordlist, folder' \
+            unless %i[password passwordlist folder].include?(store.to_s.downcase.to_sym)
 
           store.to_s.downcase.to_sym
         end
