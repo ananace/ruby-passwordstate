@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Passwordstate
   module Resources
     class Permission < Passwordstate::Resource

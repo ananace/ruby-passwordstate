@@ -1,28 +1,30 @@
+# frozen_string_literal: true
+
 module Passwordstate
   # A simple resource DSL
   class Resource
     attr_reader :client
 
-    def get(query = {})
-      set! self.class.get(client, send(self.class.index_field), query)
+    def get(**query)
+      set! self.class.get(client, send(self.class.index_field), **query)
     end
 
-    def put(body = {}, query = {})
+    def put(body = {}, **query)
       to_send = modified.merge(self.class.index_field => send(self.class.index_field))
-      set! self.class.put(client, to_send.merge(body), query).first
+      set! self.class.put(client, to_send.merge(body), **query).first
     end
 
-    def post(body = {}, query = {})
-      set! self.class.post(client, attributes.merge(body), query)
+    def post(body = {}, **query)
+      set! self.class.post(client, attributes.merge(body), **query)
     end
 
-    def delete(query = {})
-      self.class.delete(client, send(self.class.index_field), query)
+    def delete(**query)
+      self.class.delete(client, send(self.class.index_field), **query)
     end
 
     def initialize(data)
       @client = data.delete :_client
-      set! data, false
+      set! data, store_old: false
       old
     end
 
@@ -34,7 +36,9 @@ module Passwordstate
       true
     end
 
-    def self.all(client, query = {})
+    def self.all(client, **query)
+      raise NotAcceptableError, "Read is not implemented for #{self}" unless acceptable_methods.include? :get
+
       path = query.fetch(:_api_path, api_path)
       reason = query.delete(:_reason)
       query = passwordstateify_hash query.reject { |k| k.to_s.start_with? '_' }
@@ -44,7 +48,9 @@ module Passwordstate
       end
     end
 
-    def self.get(client, object, query = {})
+    def self.get(client, object, **query)
+      raise NotAcceptableError, "Read is not implemented for #{self}" unless acceptable_methods.include? :get
+
       object = object.send(object.class.send(index_field)) if object.is_a? Resource
 
       return new _client: client, index_field => object if query[:_bare]
@@ -61,7 +67,9 @@ module Passwordstate
       resp
     end
 
-    def self.post(client, data, query = {})
+    def self.post(client, data, **query)
+      raise NotAcceptableError, "Create is not implemented for #{self}" unless acceptable_methods.include? :post
+
       path = query.fetch(:_api_path, api_path)
       reason = query.delete(:_reason)
       data = passwordstateify_hash data
@@ -70,7 +78,9 @@ module Passwordstate
       new [client.request(:post, path, body: data, query: query, reason: reason)].flatten.first.merge(_client: client)
     end
 
-    def self.put(client, data, query = {})
+    def self.put(client, data, **query)
+      raise NotAcceptableError, "Update is not implemented for #{self}" unless acceptable_methods.include? :put
+
       path = query.fetch(:_api_path, api_path)
       reason = query.delete(:_reason)
       data = passwordstateify_hash data
@@ -79,7 +89,9 @@ module Passwordstate
       client.request :put, path, body: data, query: query, reason: reason
     end
 
-    def self.delete(client, object, query = {})
+    def self.delete(client, object, **query)
+      raise NotAcceptableError, "Delete is not implemented for #{self}" unless acceptable_methods.include? :delete
+
       path = query.fetch(:_api_path, api_path)
       reason = query.delete(:_reason)
       query = passwordstateify_hash query.reject { |k| k.to_s.start_with? '_' }
@@ -89,27 +101,42 @@ module Passwordstate
     end
 
     def self.passwordstateify_hash(hash)
-      Hash[hash.map  { |k, v| [ruby_to_passwordstate_field(k), v] }]
+      hash.transform_keys { |k| ruby_to_passwordstate_field(k) }
     end
 
     def api_path
       self.class.instance_variable_get :@api_path
     end
 
-    def attributes(opts = {})
+    def attributes(**opts)
       ignore_redact = opts.fetch(:ignore_redact, true)
+      atify = opts.fetch(:atify, false)
       nil_as_string = opts.fetch(:nil_as_string, self.class.nil_as_string)
-      Hash[(self.class.send(:accessor_field_names) + self.class.send(:read_field_names) + self.class.send(:write_field_names)).map do |field|
+      (self.class.send(:accessor_field_names) + self.class.send(:read_field_names) + self.class.send(:write_field_names)).to_h do |field|
         redact = self.class.send(:field_options)[field]&.fetch(:redact, false) && !ignore_redact
-        value = instance_variable_get("@#{field}".to_sym) unless redact
+        at_field = "@#{field}".to_sym
+        field = at_field if atify
+        value = instance_variable_get(at_field) unless redact
         value = '[ REDACTED ]' if redact
         value = '' if value.nil? && nil_as_string
         [field, value]
-      end].reject { |_k, v| v.nil? }
+      end.compact
     end
 
-    def inspect
-      "#{to_s[0..-2]} #{attributes(nil_as_string: false, ignore_redact: false).reject { |_k, v| v.nil? }.map { |k, v| "@#{k}=#{v.inspect}" }.join(', ')}>"
+    def pretty_print(pp)
+      pp.object_address_group(self) do
+        attrs = attributes(atify: true, nil_as_string: false, ignore_redact: false).compact
+        pp.seplist(attrs.keys.sort, -> { pp.text ',' }) do |v|
+          pp.breakable
+          v = v.to_s if v.is_a? Symbol
+          pp.text v
+          pp.text '='
+          pp.group(1) do
+            pp.breakable ''
+            pp.pp(attrs[v.to_sym])
+          end
+        end
+      end
     end
 
     protected
@@ -127,7 +154,7 @@ module Passwordstate
       @old ||= attributes.dup
     end
 
-    def set!(data, store_old = true)
+    def set!(data, store_old: true)
       @old = attributes.dup if store_old
       data = data.attributes if data.is_a? Passwordstate::Resource
       data.each do |key, value|
@@ -138,8 +165,11 @@ module Passwordstate
 
         if !value.nil? && opts&.key?(:is)
           klass = opts.fetch(:is)
-          parsed_value = klass.send :parse, value rescue nil if klass.respond_to? :parse
-          parsed_value ||= klass.send :new, value rescue nil if klass.respond_to? :new
+          parsed_value = klass.send :parse, value rescue nil if klass.respond_to?(:parse)
+          parsed_value ||= klass.send :new, value rescue nil if klass.respond_to?(:new) && !klass.respond_to?(:parse)
+        elsif !value.nil? && opts&.key?(:convert)
+          convert = opts.fetch(:convert)
+          parsed_value = convert.call(value, direction: :from)
         end
 
         instance_variable_set "@#{field}".to_sym, parsed_value || value
@@ -163,6 +193,21 @@ module Passwordstate
       def nil_as_string(opt = nil)
         @nil_as_string = opt unless opt.nil?
         @nil_as_string
+      end
+
+      def acceptable_methods(*meths)
+        if meths.empty?
+          @acceptable_methods || %i[post get put delete]
+        elsif meths.count == 1 && meths.to_s.upcase == meths.to_s
+          @acceptable_methods = []
+          meths = meths.first.to_s
+          @acceptable_methods << :post if meths.include? 'C'
+          @acceptable_methods << :get if meths.include? 'R'
+          @acceptable_methods << :put if meths.include? 'U'
+          @acceptable_methods << :delete if meths.include? 'D'
+        else
+          @acceptable_methods = meths
+        end
       end
 
       def passwordstate_to_ruby_field(field)
@@ -232,16 +277,20 @@ module Passwordstate
   end
 
   module Resources
-    autoload :Document,               'passwordstate/resources/document'
-    autoload :Folder,                 'passwordstate/resources/folder'
-    autoload :FolderPermission,       'passwordstate/resources/folder'
-    autoload :Host,                   'passwordstate/resources/host'
-    autoload :PasswordList,           'passwordstate/resources/password_list'
-    autoload :PasswordListPermission, 'passwordstate/resources/password_list'
-    autoload :Password,               'passwordstate/resources/password'
-    autoload :PasswordHistory,        'passwordstate/resources/password'
-    autoload :PasswordPermission,     'passwordstate/resources/password_list'
-    autoload :Permission,             'passwordstate/resources/permission'
-    autoload :Report,                 'passwordstate/resources/report'
+    autoload :ActiveDirectory,             'passwordstate/resources/active_directory'
+    autoload :AddressBook,                 'passwordstate/resources/address_book'
+    autoload :Document,                    'passwordstate/resources/document'
+    autoload :Folder,                      'passwordstate/resources/folder'
+    autoload :FolderPermission,            'passwordstate/resources/folder'
+    autoload :Host,                        'passwordstate/resources/host'
+    autoload :Password,                    'passwordstate/resources/password'
+    autoload :PasswordList,                'passwordstate/resources/password_list'
+    autoload :PasswordListPermission,      'passwordstate/resources/password_list'
+    autoload :PasswordHistory,             'passwordstate/resources/password'
+    autoload :PasswordPermission,          'passwordstate/resources/password_list'
+    autoload :PrivilegedAccount,           'passwordstate/resources/privileged_account'
+    autoload :PrivilegedAccountPermission, 'passwordstate/resources/privileged_account'
+    autoload :Permission,                  'passwordstate/resources/permission'
+    autoload :Report,                      'passwordstate/resources/report'
   end
 end

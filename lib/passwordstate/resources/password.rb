@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Passwordstate
   module Resources
     class Password < Passwordstate::Resource
@@ -5,6 +7,7 @@ module Passwordstate
 
       index_field :password_id
 
+      # rubocop:disable Naming/VariableNumber
       accessor_fields :title,
                       :domain,
                       :host_name,
@@ -20,6 +23,7 @@ module Passwordstate
                       :generic_field_8, { name: 'GenericField8' },
                       :generic_field_9, { name: 'GenericField9' },
                       :generic_field_10, { name: 'GenericField10' },
+                      :generic_field_info,
                       :account_type_id, { name: 'AccountTypeID' },
                       :notes,
                       :url,
@@ -28,11 +32,17 @@ module Passwordstate
                       :allow_export,
                       :web_user_id, { name: 'WebUser_ID' },
                       :web_password_id, { name: 'WebPassword_ID' },
-                      :password_list_id, { name: 'PasswordListID' } # Note: POST only  # rubocop:disable Style/BracesAroundHashParameters
+                      :password_list_id, { name: 'PasswordListID' } # NB: POST only
+      # rubocop:enable Naming/VariableNumber
 
       read_fields :account_type,
                   :password_id, { name: 'PasswordID' },
-                  :password_list
+                  :password_list,
+                  :otp,
+                  # For 'Managed' passwords
+                  :status,
+                  :current_password,
+                  :new_password
 
       # Things that can be set in a POST/PUT request
       # TODO: Do this properly
@@ -47,12 +57,34 @@ module Passwordstate
                    :heartbeat_enabled,
                    :heartbeat_schedule,
                    :validation_script_id, { name: 'ValidationScriptID' },
-                   :host_name,
                    :ad_domain_netbios, { name: 'ADDomainNetBIOS' },
                    :validate_with_priv_account
 
+      def otp!
+        client.request(:get, "onetimepassword/#{password_id}").first['OTP']
+      end
+
       def check_in
-        client.request :get, "passwords/#{password_id}", query: passwordstatify_hash(check_in: nil)
+        client.request :get, "passwords/#{password_id}", query: self.class.passwordstateify_hash(check_in: nil)
+      end
+
+      def send_selfdestruct(email, expires_at:, view_count:, reason: nil, **params)
+        data = {
+          password_id: password_id,
+          to_email_address: email,
+          expires_at: expires_at,
+          no_views: view_count
+        }
+        data[:message] = params[:message] if params.key? :message
+        data[:prefix_message_content] = params[:prefix_message] if params.key? :prefix_message
+        data[:append_message_content] = params[:suffix_message] if params.key? :suffix_message
+        data[:to_first_name] = params[:name] if params.key? :name
+        data[:email_subject] = params[:subject] if params.key? :subject
+        data[:email_body] = params[:body] if params.key? :body
+        data[:passphrase] = params[:passphrase] if params.key? :passphrase
+        data[:reason] = reason if reason
+
+        client.request :post, 'selfdestruct', data: data
       end
 
       def history
@@ -69,25 +101,25 @@ module Passwordstate
         PasswordPermission.new(_client: client, password_id: password_id)
       end
 
-      def delete(recycle = false, query = {})
-        super query.merge(move_to_recycle_bin: recycle)
+      def delete(recycle: false, **query)
+        super(**query.merge(move_to_recycle_bin: recycle))
       end
 
-      def add_dependency(data = {})
+      def add_dependency(**data)
         raise 'Password dependency creation only available for stored passwords' unless stored?
 
         client.request :post, 'dependencies', body: self.class.passwordstatify_hash(data.merge(password_id: password_id))
       end
 
-      def self.all(client, query = {})
-        super client, { query_all: true }.merge(query)
+      def self.all(client, **query)
+        super client, **{ query_all: true }.merge(query)
       end
 
-      def self.search(client, query = {})
-        super client, { _api_path: 'searchpasswords' }.merge(query)
+      def self.search(client, **query)
+        super client, **{ _api_path: 'searchpasswords' }.merge(query)
       end
 
-      def self.generate(client, options = {})
+      def self.generate(client, **options)
         results = client.request(:get, 'generatepassword', query: options).map { |r| r['Password'] }
         return results.first if results.count == 1
 
@@ -110,6 +142,7 @@ module Passwordstate
                   :surname
 
       # Password object fields
+      # rubocop:disable Naming/VariableNumber
       read_fields :title,
                   :domain,
                   :host_name,
@@ -134,7 +167,8 @@ module Passwordstate
                   :expiry_date, { is: Time },
                   :allow_export,
                   :web_user_id, { name: 'WebUser_ID' },
-                  :web_password_id, { name: 'WebPassword_ID' } # rubocop:disable Style/BracesAroundHashParameters
+                  :web_password_id, { name: 'WebPassword_ID' }
+      # rubocop:enable Naming/VariableNumber
 
       def get
         raise 'Not applicable'
@@ -146,7 +180,7 @@ module Passwordstate
 
       index_field :password_id
 
-      read_fields :password_id, { name: 'PasswordID' } # rubocop:disable Style/BracesAroundHashParameters
+      read_fields :password_id, { name: 'PasswordID' }
     end
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'test_helper'
 
 class PasswordstateTest < Minitest::Test
@@ -5,7 +7,13 @@ class PasswordstateTest < Minitest::Test
     refute_nil ::Passwordstate::VERSION
   end
 
-  def test_it_does_something_useful
-    assert false
+  def test_logging_setup
+    assert_equal 2, Passwordstate.logger.level # :warn
+
+    Passwordstate.debug!
+
+    assert_equal 0, Passwordstate.logger.level # :debug
+
+    Passwordstate.logger.level = :warn
   end
 end

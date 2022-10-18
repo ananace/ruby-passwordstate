@@ -1,5 +1,9 @@
+# frozen_string_literal: true
+
 module Passwordstate
   class PasswordstateError < RuntimeError; end
+
+  class NotAcceptableError < PasswordstateError; end
 
   class HTTPError < PasswordstateError
     attr_reader :code, :request, :response, :errors

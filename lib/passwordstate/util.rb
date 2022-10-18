@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'net/http'
 require 'net/ntlm'
 
@@ -55,7 +57,7 @@ module Passwordstate
       end
 
       type1 = Net::NTLM::Message::Type1.new
-      req['authorization'] = 'NTLM ' + type1.encode64
+      req['authorization'] = "NTLM #{type1.encode64}"
       res = super(req, body)
 
       challenge = res['www-authenticate'][/(?:NTLM|Negotiate) (.+)/, 1]
@@ -64,7 +66,7 @@ module Passwordstate
         type2 = Net::NTLM::Message.decode64 challenge
         type3 = type2.response(req.ntlm_auth_information, req.ntlm_auth_options.dup)
 
-        req['authorization'] = 'NTLM ' + type3.encode64
+        req['authorization'] = "NTLM #{type3.encode64}"
         req.body_stream.rewind if req.body_stream
         req.body = @last_body if @last_body
 

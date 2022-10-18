@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Passwordstate
   module Resources
     class Folder < Passwordstate::Resource
@@ -29,7 +31,7 @@ module Passwordstate
         FolderPermission.new(_client: client, folder_id: folder_id)
       end
 
-      def full_path(unix = false)
+      def full_path(unix: false)
         return tree_path.tr('\\', '/') if unix
 
         tree_path
@@ -41,7 +43,7 @@ module Passwordstate
 
       index_field :folder_id
 
-      read_fields :folder_id, { name: 'FolderID' } # rubocop:disable Style/BracesAroundHashParameters
+      read_fields :folder_id, { name: 'FolderID' }
     end
   end
 end

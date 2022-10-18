@@ -1,30 +1,8 @@
+# frozen_string_literal: true
+
 module Passwordstate
-  class ResourceList < Array
-    Array.public_instance_methods(false).each do |method|
-      next if %i[reject select slice clear inspect].include?(method.to_sym)
-
-      class_eval <<-EVAL, __FILE__, __LINE__ + 1
-        def #{method}(*args)
-          lazy_load unless @loaded
-          super
-        end
-      EVAL
-    end
-
-    %w[reject select slice].each do |method|
-      class_eval <<-EVAL, __FILE__, __LINE__ + 1
-        def #{method}(*args)
-          lazy_load unless @loaded
-          data = super
-          self.clone.clear.concat(data)
-        end
-      EVAL
-    end
-
-    def inspect
-      lazy_load unless @loaded
-      super
-    end
+  class ResourceList
+    include Enumerable
 
     attr_reader :client, :resource, :options
 
@@ -33,13 +11,37 @@ module Passwordstate
       @resource = resource
       @loaded = false
       @options = options
+      @data = []
 
       options[:only] = [options[:only]].flatten if options.key? :only
       options[:except] = [options[:except]].flatten if options.key? :except
     end
 
+    def pretty_print_instance_variables
+      instance_variables.reject { |k| %i[@client @data].include? k }.sort
+    end
+
+    def pretty_print(pp)
+      pp.pp_object(self)
+    end
+
+    alias inspect pretty_print_inspect
+
+    def each(&block)
+      lazy_load unless @loaded
+
+      return to_enum(__method__) { @data.size } unless block_given?
+
+      @data.each(&block)
+    end
+
+    def [](index)
+      @data[index]
+    end
+
     def clear
-      @loaded = super
+      @data = []
+      @loaded = false
     end
 
     def reload
@@ -48,9 +50,12 @@ module Passwordstate
     end
 
     def load(entries)
-      clear && entries.tap do |loaded|
+      clear
+      entries.tap do |loaded|
         loaded.sort! { |a, b| a.send(a.class.index_field) <=> b.send(b.class.index_field) } if options.fetch(:sort, true)
-      end.each { |obj| self << obj }
+      end
+      entries.each { |obj| @data << obj }
+      @loaded = true
       self
     end
 
@@ -74,29 +79,29 @@ module Passwordstate
       obj
     end
 
-    def search(query = {})
+    def search(**query)
       raise 'Operation not supported' unless operation_supported?(:search)
 
       api_path = options.fetch(:search_path, resource.api_path)
       query = options.fetch(:search_query, {}).merge(query)
 
-      resource.search(client, query.merge(_api_path: api_path))
+      resource.search(client, **query.merge(_api_path: api_path))
     end
 
-    def all(query = {})
+    def all(**query)
       raise 'Operation not supported' unless operation_supported?(:all)
 
       api_path = options.fetch(:all_path, resource.api_path)
       query = options.fetch(:all_query, {}).merge(query)
 
-      load resource.all(client, query.merge(_api_path: api_path))
+      load resource.all(client, **query.merge(_api_path: api_path))
     end
 
-    def get(id, query = {})
+    def get(id, **query)
       raise 'Operation not supported' unless operation_supported?(:get)
 
-      if query.empty? && !entries.empty?
-        existing = entries.find do |entry|
+      if query.empty? && !@data.empty?
+        existing = @data.find do |entry|
           entry.send(entry.class.index_field) == id
         end
         return existing if existing
@@ -105,34 +110,34 @@ module Passwordstate
       api_path = options.fetch(:get_path, resource.api_path)
       query = options.fetch(:get_query, {}).merge(query)
 
-      resource.get(client, id, query.merge(_api_path: api_path))
+      resource.get(client, id, **query.merge(_api_path: api_path))
     end
 
-    def post(data, query = {})
+    def post(data, **query)
       raise 'Operation not supported' unless operation_supported?(:post)
 
       api_path = options.fetch(:post_path, resource.api_path)
       query = options.fetch(:post_query, {}).merge(query)
 
-      resource.post(client, data, query.merge(_api_path: api_path))
+      resource.post(client, data, **query.merge(_api_path: api_path))
     end
 
-    def put(data, query = {})
+    def put(data, **query)
       raise 'Operation not supported' unless operation_supported?(:put)
 
       api_path = options.fetch(:put_path, resource.api_path)
       query = options.fetch(:put_query, {}).merge(query)
 
-      resource.put(client, data, query.merge(_api_path: api_path))
+      resource.put(client, data, **query.merge(_api_path: api_path))
     end
 
-    def delete(id, query = {})
+    def delete(id, **query)
       raise 'Operation not supported' unless operation_supported?(:delete)
 
       api_path = options.fetch(:delete_path, resource.api_path)
       query = options.fetch(:delete_query, {}).merge(query)
 
-      resource.delete(client, id, query.merge(_api_path: api_path))
+      resource.delete(client, id, **query.merge(_api_path: api_path))
     end
 
     private

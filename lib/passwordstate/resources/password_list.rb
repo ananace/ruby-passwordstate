@@ -1,7 +1,22 @@
+# frozen_string_literal: true
+
 module Passwordstate
   module Resources
     class PasswordList < Passwordstate::Resource
+      HideConfig = Struct.new(:view, :modify, :admin) do
+        def self.parse(str)
+          view, modify, admin = str.split(':').map { |b| b.to_s.downcase == 'true' }
+
+          new view, modify, admin
+        end
+
+        def to_s
+          "#{view}:#{modify}:#{admin}"
+        end
+      end
+
       api_path 'passwordlists'
+      acceptable_methods :CR
 
       index_field :password_list_id
 
@@ -26,11 +41,13 @@ module Passwordstate
                       :provide_access_reason,
                       :password_reset_enabled,
                       :force_password_generator,
-                      :hide_passwords,
+                      :hide_passwords, { is: HideConfig },
                       :show_guide,
                       :enable_password_reset_schedule,
                       :password_reset_schedule,
-                      :add_days_to_expiry_date
+                      :add_to_expiry_date,
+                      :add_to_expiry_date_interval,
+                      :one_time_passwords
 
       read_fields :password_list_id, { name: 'PasswordListID' },
                   :tree_path,
@@ -38,10 +55,22 @@ module Passwordstate
                   :generator_name,
                   :policy_name
 
+      write_fields :copy_settings_from_password_list_id, { name: 'CopySettinsgFromPasswordListID' },
+                   :copy_settings_from_template_id, { name: 'CopySettingsFromTemplateID' },
+                   :link_to_template,
+                   :copy_permissions_from_password_list_id, { name: 'CopyPermissionsFromPasswordListID' },
+                   :copy_permissions_from_template_id, { name: 'CopyPermissionsFromTemplateID' },
+                   :nest_under_folder_id, { name: 'NestUnderFolderID' },
+                   :apply_permissions_for_user_id, { name: 'ApplyPermissionsForUserID' },
+                   :apply_permissions_for_security_group_id, { name: 'ApplyPermissionsForSecurityGroupID' },
+                   :apply_permissions_for_security_group_name,
+                   :permission,
+                   :site_id, { name: 'SiteID' }
+
       alias title password_list
 
-      def self.search(client, query = {})
-        super client, query.merge(_api_path: 'searchpasswordlists')
+      def self.search(client, **query)
+        super client, **query.merge(_api_path: 'searchpasswordlists')
       end
 
       def passwords
@@ -58,8 +87,11 @@ module Passwordstate
         PasswordListPermission.new(_client: client, password_list_id: password_list_id)
       end
 
-      def full_path(unix = false)
-        [tree_path, password_list].compact.join('\\').tap do |full|
+      def full_path(unix: false)
+        path = [tree_path]
+        path << password_list unless tree_path.end_with? password_list
+
+        path.compact.join('\\').tap do |full|
           full.tr!('\\', '/') if unix
         end
       end
@@ -70,7 +102,7 @@ module Passwordstate
 
       index_field :password_list_id
 
-      read_fields :password_list_id, { name: 'PasswordListID' } # rubocop:disable Style/BracesAroundHashParameters
+      read_fields :password_list_id, { name: 'PasswordListID' }
     end
   end
 end

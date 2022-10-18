@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 require 'json'
 
 module Passwordstate
   class Client
-    USER_AGENT = "RubyPasswordstate/#{Passwordstate::VERSION}".freeze
+    USER_AGENT = "RubyPasswordstate/#{Passwordstate::VERSION}"
     DEFAULT_HEADERS = {
       'accept' => 'application/json',
       'user-agent' => USER_AGENT
@@ -32,6 +34,11 @@ module Passwordstate
     def timeout=(sec)
       @timeout = sec
       @http.read_timeout = sec if @http
+    end
+
+    def address_book
+      ResourceList.new Passwordstate::Resources::AddressBook,
+                       client: self
     end
 
     def folders
@@ -69,15 +76,25 @@ module Passwordstate
         html = request(:get, '', allow_html: true)
         version = html.find_line { |line| line.include? '<span>V</span>' }
         version = />(\d\.\d) \(Build (.+)\)</.match(version)
-        "#{version[1]}.#{version[2]}"
+        "#{version[1]}.#{version[2]}" if version
       end
     end
 
     def version?(compare)
+      if version.nil?
+        logger.debug 'Unable to detect Passwordstate version, assuming recent enough.'
+        return true
+      end
+
       Gem::Dependency.new(to_s, compare).match?(to_s, version)
     end
 
     def require_version(compare)
+      if version.nil?
+        logger.debug 'Unable to detect Passwordstate version, assuming recent enough.'
+        return true
+      end
+
       raise "Your version of Passwordstate (#{version}) doesn't support the requested feature" unless version? compare
     end
 
@@ -108,9 +125,9 @@ module Passwordstate
       if data
         return data if res_obj.is_a? Net::HTTPSuccess
 
-        data = data.first if data.is_a? Array
-        parsed = data.fetch('errors', []) if data.is_a?(Hash) && data.key?('errors')
-        parsed = [data]
+        # data = data.first if data.is_a? Array
+        # parsed = data.fetch('errors', []) if data.is_a?(Hash) && data.key?('errors')
+        parsed = [data].flatten
 
         raise Passwordstate::HTTPError.new_by_code(res_obj.code, req_obj, res_obj, parsed || [])
       else
@@ -120,9 +137,15 @@ module Passwordstate
       end
     end
 
-    def inspect
-      "#{to_s[0..-2]} #{instance_variables.reject { |k| %i[@auth_data @http @logger].include? k }.map { |k| "#{k}=#{instance_variable_get(k).inspect}" }.join ', '}>"
+    def pretty_print_instance_variables
+      instance_variables.reject { |k| %i[@auth_data @http @logger].include? k }.sort
     end
+
+    def pretty_print(pp)
+      pp.pp(self)
+    end
+
+    alias inspect pretty_print_inspect
 
     private
 
@@ -136,7 +159,7 @@ module Passwordstate
       @http.start
     end
 
-    def print_http(http, truncate = true)
+    def print_http(http, truncate: true)
       return unless logger.debug?
 
       if http.is_a? Net::HTTPRequest

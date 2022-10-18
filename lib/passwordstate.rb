@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 require 'logging'
+require 'pp'
 require 'passwordstate/version'
 require 'passwordstate/client'
 require 'passwordstate/errors'
