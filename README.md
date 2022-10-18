@@ -29,7 +29,7 @@ client = Passwordstate::Client.new 'https://passwordstate.example.com', username
 # #<Passwordstate::Client:0x0000559eb1fabec8
 #  @headers=
 #   {"accept"=>"application/json", "user-agent"=>"RubyPasswordstate/0.1.0"},
-#  @server_url=#<URI::HTTPS https://passwordstate.it.liu.se>,
+#  @server_url=#<URI::HTTPS https://passwordstate.example.com>,
 #  @timeout=15,
 #  @validate_certificate=true>
 
