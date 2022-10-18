@@ -1,6 +1,6 @@
 # Passwordstate
 
-A ruby gem for communicating with a Passwordstate instance
+A Ruby gem for communicating with a [Passwordstate](https://clickstudios.com.au/passwordstate.aspx) instance
 
 The documentation for the development version can be found at https://iti.gitlab-pages.liu.se/ruby-passwordstate
 
@@ -83,6 +83,8 @@ pw.password
 pw.delete
 # true
 ```
+
+A larger - and much more convoluted - example can be found at https://github.com/ananace/foreman_passwordstate/
 
 ## Contributing
 
