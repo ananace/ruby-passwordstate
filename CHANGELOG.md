@@ -1,3 +1,10 @@
+## v0.1.0 2022-12-05
+
+- Reduced data transferred for regular queries
+- Fixed support for more modern Ruby (3+)
+- Fixed error handling and changes for newer Passwordstate versions
+- Improved pretty printing when debugging
+
 ## v0.0.4 2019-10-23
 
 - Fixed a client request issue due to a rubocop change
