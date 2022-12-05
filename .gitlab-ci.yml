@@ -12,7 +12,10 @@ before_script:
 
 rubocop:
   script:
-    - bundle exec rubocop
+    - bundle exec rubocop lib/ -f p -f ju -o junit.xml
+  artifacts:
+    reports:
+      junit: junit.xml
 
 pages:
   before_script: []
