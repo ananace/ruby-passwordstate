@@ -151,6 +151,12 @@ module Passwordstate
       end
     end
 
+    def modified?(field = nil)
+      return modified.any? unless field
+
+      modified.include? field
+    end
+
     protected
 
     def api_path
@@ -160,10 +166,6 @@ module Passwordstate
     def modified
       attribs = attributes
       attribs.reject { |field| old[field] == attribs[field] }
-    end
-
-    def modified?(field)
-      modified.include? field
     end
 
     def old
