@@ -1,3 +1,8 @@
+## v0.1.1 2024-03-27
+
+- Add Client#open_timeout=
+- Add Resource#modified?
+
 ## v0.1.0 2022-12-05
 
 - Reduced data transferred for regular queries
