@@ -13,7 +13,7 @@ module Passwordstate
       alias title document_name
 
       def self.all(client, store, **query)
-        super client, query.merge(_api_path: "#{api_path}/#{validate_store! store}")
+        super(client, query.merge(_api_path: "#{api_path}/#{validate_store! store}"))
       end
 
       def self.search(client, store, **options)
@@ -21,19 +21,19 @@ module Passwordstate
       end
 
       def self.get(client, store, object)
-        super client, object, _api_path: "#{api_path}/#{validate_store! store}"
+        super(client, object, _api_path: "#{api_path}/#{validate_store! store}")
       end
 
       def self.post(client, store, data, **query)
-        super client, data, query.merge(_api_path: "#{api_path}/#{validate_store! store}")
+        super(client, data, query.merge(_api_path: "#{api_path}/#{validate_store! store}"))
       end
 
       def self.put(client, store, data, **query)
-        super client, data, query.merge(_api_path: "#{api_path}/#{validate_store! store}")
+        super(client, data, query.merge(_api_path: "#{api_path}/#{validate_store! store}"))
       end
 
       def self.delete(client, store, object, **query)
-        super client, object, query.merge(_api_path: "#{api_path}/#{validate_store! store}")
+        super(client, object, query.merge(_api_path: "#{api_path}/#{validate_store! store}"))
       end
 
       class << self

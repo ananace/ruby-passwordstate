@@ -112,11 +112,13 @@ module Passwordstate
       end
 
       def self.all(client, **query)
-        super client, **{ query_all: true }.merge(query)
+        query = { query_all: true }.merge(query)
+        super(client, **query)
       end
 
       def self.search(client, **query)
-        super client, **{ _api_path: 'searchpasswords' }.merge(query)
+        query = { _api_path: 'searchpasswords' }.merge(query)
+        super(client, **query)
       end
 
       def self.generate(client, **options)

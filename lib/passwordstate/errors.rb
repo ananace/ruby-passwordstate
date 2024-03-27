@@ -15,7 +15,7 @@ module Passwordstate
       @errors = errors
 
       errorstr = errors.map { |err| err['message'] || err['phrase'] || err['error'] }.join('; ')
-      super "Passwordstate responded with an error to the request:\n#{errorstr}"
+      super("Passwordstate responded with an error to the request:\n#{errorstr}")
     end
 
     def self.new_by_code(code, req, res, errors = [])

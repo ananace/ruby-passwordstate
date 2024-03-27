@@ -126,7 +126,7 @@ module Passwordstate
       nil_as_string = opts.fetch(:nil_as_string, self.class.nil_as_string)
       (self.class.send(:accessor_field_names) + self.class.send(:read_field_names) + self.class.send(:write_field_names)).to_h do |field|
         redact = self.class.send(:field_options)[field]&.fetch(:redact, false) && !ignore_redact
-        at_field = "@#{field}".to_sym
+        at_field = :"@#{field}"
         field = at_field if atify
         value = instance_variable_get(at_field) unless redact
         value = '[ REDACTED ]' if redact
@@ -190,7 +190,7 @@ module Passwordstate
           parsed_value = convert.call(value, direction: :from)
         end
 
-        instance_variable_set "@#{field}".to_sym, parsed_value || value
+        instance_variable_set :"@#{field}", parsed_value || value
       end
       self
     end

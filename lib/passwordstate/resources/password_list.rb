@@ -70,7 +70,7 @@ module Passwordstate
       alias title password_list
 
       def self.search(client, **query)
-        super client, **query.merge(_api_path: 'searchpasswordlists')
+        super(client, **query.merge(_api_path: 'searchpasswordlists'))
       end
 
       def passwords

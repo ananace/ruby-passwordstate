@@ -62,11 +62,11 @@ module Passwordstate
     end
 
     def operation_supported?(operation)
-      return nil unless %i[search all get post put delete].include?(operation)
+      return false unless %i[search all get post put delete].include?(operation)
       return false if options.key?(:only) && !options[:only].include?(operation)
       return false if options.key?(:except) && options[:except].include?(operation)
 
-      !options.fetch("#{operation}_path".to_sym, '').nil?
+      !options.fetch(:"#{operation}_path", '').nil?
     end
 
     def new(data)
