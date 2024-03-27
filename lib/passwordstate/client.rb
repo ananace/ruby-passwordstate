@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'json'
+require 'pp' # rubocop:disable Lint/RedundantRequireStatement - required for pretty_print_inspect
 
 module Passwordstate
   class Client
