@@ -32,6 +32,11 @@ module Passwordstate
       @api_type || (auth_data.key?(:apikey) ? :api : :winapi)
     end
 
+    def open_timeout=(sec)
+      @open_timeout = sec
+      @http.open_timeout = sec if @http
+    end
+
     def timeout=(sec)
       @timeout = sec
       @http.read_timeout = sec if @http
