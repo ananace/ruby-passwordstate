@@ -12,6 +12,10 @@ module Passwordstate
       @code = code.to_i
       @request = request
       @response = response
+
+      if errors.count == 1 && errors.first.is_a?(Hash) && errors.first.key?('errors')
+        errors = errors.first['errors']
+      end
       @errors = errors
 
       errorstr = errors.map { |err| err['message'] || err['phrase'] || err['error'] }.join('; ')
