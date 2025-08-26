@@ -1,4 +1,4 @@
-## Unreleased
+## v0.1.2 2025-08-26
 
 - Improved performance when working with large lists
 
