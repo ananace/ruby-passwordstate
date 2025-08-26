@@ -34,8 +34,7 @@ module Passwordstate
 
     def initialize(data)
       @client = data.delete :_client
-      set! data, store_old: false
-      old
+      set! data
     end
 
     # Is the object stored on the Passwordstate server
@@ -164,16 +163,11 @@ module Passwordstate
     end
 
     def modified
-      attribs = attributes
-      attribs.reject { |field| old[field] == attribs[field] }
+      @modified ||= {}
     end
 
-    def old
-      @old ||= attributes.dup
-    end
-
-    def set!(data, store_old: true)
-      @old = attributes.dup if store_old
+    def set!(data, reset_modified = true)
+      @modified = {} if reset_modified
       data = data.attributes if data.is_a? Passwordstate::Resource
       data.each do |key, value|
         field = self.class.passwordstate_to_ruby_field(key)
@@ -274,7 +268,8 @@ module Passwordstate
         fields.each do |field|
           if field.is_a? Symbol
             accessor_field_names << field
-            attr_accessor field
+            attr_reader field
+            build_writer_method field
           else
             field_options[accessor_field_names.last] = field
           end
@@ -296,10 +291,22 @@ module Passwordstate
         fields.each do |field|
           if field.is_a? Symbol
             write_field_names << field
-            attr_writer field
+            build_writer_method field
           else
             field_options[write_field_names.last] = field
           end
+        end
+      end
+
+      private
+
+      def build_writer_method(field)
+        field = field.to_s.to_sym unless field.is_a? Symbol
+        define_method(:"#{field}=") do |arg|
+          return arg if send(field) == arg
+
+          instance_variable_set "@#{field}", arg
+          modified[field] = arg
         end
       end
     end
@@ -317,7 +324,7 @@ module Passwordstate
     autoload :PasswordList,                'passwordstate/resources/password_list'
     autoload :PasswordListPermission,      'passwordstate/resources/password_list'
     autoload :PasswordHistory,             'passwordstate/resources/password'
-    autoload :PasswordPermission,          'passwordstate/resources/password_list'
+    autoload :PasswordPermission,          'passwordstate/resources/password'
     autoload :PrivilegedAccount,           'passwordstate/resources/privileged_account'
     autoload :PrivilegedAccountPermission, 'passwordstate/resources/privileged_account'
     autoload :Permission,                  'passwordstate/resources/permission'

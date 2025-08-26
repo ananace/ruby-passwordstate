@@ -1,3 +1,7 @@
+## Unreleased
+
+- Improved performance when working with large lists
+
 ## v0.1.1 2024-03-27
 
 - Add Client#open_timeout=
