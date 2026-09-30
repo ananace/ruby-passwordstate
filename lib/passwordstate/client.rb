@@ -19,7 +19,7 @@ module Passwordstate
       @server_url = URI(url)
       @validate_certificate = true
       @headers = DEFAULT_HEADERS
-      @auth_data = options.select { |k, _v| %i[apikey username password].include? k }
+      @auth_data = options.select { |k, _v| %i[apikey username password domain].include? k }
       @api_type = options.fetch(:api_type) if options.key? :api_type
       @open_timeout = options.fetch(:open_timeout, 5)
       @timeout = options.fetch(:timeout, 15)
@@ -117,7 +117,7 @@ module Passwordstate
         req_obj['content-type'] = 'application/json'
       end
 
-      req_obj.ntlm_auth(auth_data[:username], auth_data[:password]) if api_type == :winapi
+      req_obj.ntlm_auth(auth_data[:username], auth_data[:password], auth_data[:domain]) if api_type == :winapi
       headers.each { |h, v| req_obj[h] = v }
       req_obj['APIKey'] = auth_data[:apikey] if api_type == :api
       req_obj['Reason'] = reason if !reason.nil? && version?('>= 8.4.8449')
